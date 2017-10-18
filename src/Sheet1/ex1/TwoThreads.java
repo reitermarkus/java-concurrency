@@ -1,4 +1,4 @@
-package hw01.ex1;
+package Sheet1.ex1;
 
 /**
  * Created by Lukas Dötlinger.
