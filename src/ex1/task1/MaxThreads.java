@@ -1,4 +1,4 @@
-package ex1;
+package ex1.task1;
 
 public class MaxThreads {
   public static void main(String[] args) {

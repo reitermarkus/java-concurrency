@@ -1,4 +1,4 @@
-package Sheet1.ex1;
+package ex1.task1;
 
 /**
  * Created by Lukas Dötlinger.
