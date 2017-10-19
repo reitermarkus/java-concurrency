@@ -30,8 +30,8 @@ public class ParallelVectorMultiplication {
     final ExecutorService pool = Executors.newFixedThreadPool(threadCount);
 
     Stream<Future<Integer>> futures = IntStream.range(1, threadCount).mapToObj(i -> {
-      int min = (i * (vecSize/i)) - (vecSize/i) + 1;
-      int max = (i * (vecSize/i));
+      int min = (i * (vecSize/threadCount)) - (vecSize/threadCount) + 1;
+      int max = (i * (vecSize/threadCount));
       ArrayList<Integer> temp1 = new ArrayList<>();
       ArrayList<Integer> temp2 = new ArrayList<>();
       for(int j = min; j <= max; j++) {
