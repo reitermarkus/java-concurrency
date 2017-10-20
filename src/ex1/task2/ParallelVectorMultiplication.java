@@ -31,6 +31,7 @@ public class ParallelVectorMultiplication {
     Stream<Future<Long>> futures = IntStream.rangeClosed(1, threadCount).mapToObj(i -> {
       int min = (i * (vecSize/threadCount)) - (vecSize/threadCount) + 1;
       int max = (i * (vecSize/threadCount));
+      if(i == threadCount) {max = vecSize;}
       Callable<Long> task = new Multiplication(vector1, vector2, min, max);
       return pool.submit(task);
     });
