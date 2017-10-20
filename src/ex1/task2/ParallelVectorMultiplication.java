@@ -32,7 +32,8 @@ public class ParallelVectorMultiplication {
       int min = (i * (vecSize/threadCount)) - (vecSize/threadCount) + 1;
       int max = (i * (vecSize/threadCount));
       Callable<Integer> task = new Multiplication(vector1, vector2, min, max);
-      return pool.submit(task);});
+      return pool.submit(task);
+    });
 
     Integer result = futures.mapToInt(f -> {
       try {
