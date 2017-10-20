@@ -12,6 +12,7 @@ public class SerialVectorMultiplication {
   private static Vector<Integer> vector2 = new Vector<>();
 
   public static void main(String[] args){
+    long startTime = System.currentTimeMillis();
 
     for(int i = 1; i <= 500; i++) {
       vector1.add(i);
@@ -23,5 +24,8 @@ public class SerialVectorMultiplication {
       .collect(Collectors.summingInt(Integer::intValue));
 
     System.out.println(result);
+
+    long endTime = System.currentTimeMillis();
+    System.out.println("This took " + (endTime-startTime) + " milliseconds!");
   }
 }
