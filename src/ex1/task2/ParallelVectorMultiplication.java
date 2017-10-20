@@ -17,6 +17,7 @@ public class ParallelVectorMultiplication {
   private static Vector<Integer> vector2 = new Vector<>();
 
   public static void main(String[] args) {
+    long startTime = System.currentTimeMillis();
 
     for(int i = 1; i <= 500; i++){
       vector1.add(i);
@@ -45,6 +46,9 @@ public class ParallelVectorMultiplication {
     pool.shutdown();
 
     System.out.println(result);
+
+    long endTime = System.currentTimeMillis();
+    System.out.println("This took " + (endTime-startTime) + " milliseconds!");
   }
 
 }
