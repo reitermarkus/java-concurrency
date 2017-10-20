@@ -8,10 +8,10 @@ import java.util.stream.IntStream;
 /**
  * Created by Lukas Dötlinger.
  */
-public class Multiplication implements Callable<Integer> {
+public class Multiplication implements Callable<Long> {
 
-  private static Vector<Integer> vector1 = new Vector<>();
-  private static Vector<Integer> vector2 = new Vector<>();
+  private static Vector<Long> vector1 = new Vector<>();
+  private static Vector<Long> vector2 = new Vector<>();
   private static int min = 0;
   private static int max = 0;
 
@@ -22,10 +22,10 @@ public class Multiplication implements Callable<Integer> {
     this.max = max;
   }
 
-  public Integer call() {
+  public Long call() {
     return IntStream.rangeClosed(min, max)
       .mapToObj(i -> vector1.get(i-1)* vector2.get(i-1))
-      .collect(Collectors.summingInt(Integer::intValue));
+      .collect(Collectors.summingLong(Long::longValue));
   }
 
 }

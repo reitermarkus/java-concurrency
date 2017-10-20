@@ -13,29 +13,30 @@ import java.util.stream.Stream;
  */
 public class ParallelVectorMultiplication {
 
-  private static Vector<Integer> vector1 = new Vector<>();
-  private static Vector<Integer> vector2 = new Vector<>();
+  private static Vector<Long> vector1 = new Vector<>();
+  private static Vector<Long> vector2 = new Vector<>();
 
   public static void main(String[] args) {
     long startTime = System.currentTimeMillis();
 
-    for(int i = 1; i <= 500; i++){
-      vector1.add(i);
-      vector2.add(i);
+    for(int i = 1; i <= 10000; i++){
+      vector1.add((long) i);
+      vector2.add((long) i);
     }
     final int vecSize = vector1.size();
 
     final int threadCount = Runtime.getRuntime().availableProcessors();
     final ExecutorService pool = Executors.newFixedThreadPool(threadCount);
 
-    Stream<Future<Integer>> futures = IntStream.rangeClosed(1, threadCount).mapToObj(i -> {
+    Stream<Future<Long>> futures = IntStream.rangeClosed(1, threadCount).mapToObj(i -> {
       int min = (i * (vecSize/threadCount)) - (vecSize/threadCount) + 1;
       int max = (i * (vecSize/threadCount));
-      Callable<Integer> task = new Multiplication(vector1, vector2, min, max);
+      if(i == threadCount) {max = vecSize;}
+      Callable<Long> task = new Multiplication(vector1, vector2, min, max);
       return pool.submit(task);
     });
 
-    Integer result = futures.mapToInt(f -> {
+    Long result = futures.mapToLong(f -> {
       try {
         return f.get();
       } catch (Exception e) {
