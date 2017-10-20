@@ -11,7 +11,7 @@ public class SerialVectorMultiplication {
   private static Vector<Integer> vector1 = new Vector<>();
   private static Vector<Integer> vector2 = new Vector<>();
 
-  public static void main(String[] args){
+  public static void main(String[] args) {
     long startTime = System.currentTimeMillis();
 
     for(int i = 1; i <= 500; i++) {
