@@ -1,7 +1,6 @@
 package ex1.task2;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Vector;
 import java.util.stream.Collectors;
 
 /**
@@ -9,8 +8,8 @@ import java.util.stream.Collectors;
  */
 public class SerialVectorMultiplication {
 
-  private static List<Integer> vector1 = new ArrayList<>();
-  private static List<Integer> vector2 = new ArrayList<>();
+  private static Vector<Integer> vector1 = new Vector<>();
+  private static Vector<Integer> vector2 = new Vector<>();
 
   public static void main(String[] args){
 
