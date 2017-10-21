@@ -3,3 +3,9 @@
 /out
 .idea
 *.iml
+
+# LaTeX
+
+*.aux
+*.log
+*.gz
