@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 
 public class MatrixMultiply implements Callable<ArrayList<ArrayList<Long>>> {
 
-  private static ArrayList<ArrayList<Long>> matrix1 = new ArrayList<>();
-  private static ArrayList<ArrayList<Long>> matrix2 = new ArrayList<>();
-  private static int minColumn;
-  private static int maxColumn;
+  private ArrayList<ArrayList<Long>> matrix1;
+  private ArrayList<ArrayList<Long>> matrix2;
+  private int minColumn;
+  private int maxColumn;
 
   public MatrixMultiply(ArrayList<ArrayList<Long>> m1, ArrayList<ArrayList<Long>> m2, int min, int max){
     this.matrix1 = m1;
