@@ -25,7 +25,7 @@
 		After computation, every thread returns his local sum, which are added together to get the final result.
 
   \section{Matrix Multiplication}
-  
+
   \textit{SerialMetrixMultiplication.java} implements the serial multiplication of two matrices. A \texttt{ArrayList<ArrayList<Long>>} datastructure is used to represent a matrix, where the inner \texttt{ArrayList<Long>} is representing a column. The main part is a for loop that iterates over the result matrix, and calculates every number.\bigbreak
   \textit{ParallelMatrixMultiplication.java} implements our parallel approach of multiplying two matrices. It uses the same datastructure as the serial version, but splits the workload within a threadpool. Every thread gets an mostly equal part of the resultmatrix's rows to calculate. \textit{MatrixMultiply.java} is the callable object each thread calls. The threads each return a part of the resultmatrix. The \texttt{stream} of those parts is flattened using the \texttt{flatMap()}-function and then put together using the \texttt{collect()}-function.
 
