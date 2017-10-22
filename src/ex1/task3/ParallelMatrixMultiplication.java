@@ -20,8 +20,8 @@ public class ParallelMatrixMultiplication {
   public static void main(String[] args) {
     long startTime = System.currentTimeMillis();
 
-    matrix1 = fillMatrix(100, 100);
-    matrix2 = fillMatrix(100, 100);
+    matrix1 = MatrixUtilities.fillMatrix(100, 100);
+    matrix2 = MatrixUtilities.fillMatrix(100, 100);
 
     // final matrix has the number of columns from matrix 1 and number of rows of matrix 2
 
@@ -53,7 +53,7 @@ public class ParallelMatrixMultiplication {
 
     pool.shutdown();
 
-    MatrixMultiply.printMatrix(result);
+    MatrixUtilities.printMatrix(result);
 
     long endTime = System.currentTimeMillis();
     System.out.println("This took " + (endTime-startTime) + " milliseconds!");

@@ -15,20 +15,20 @@ public class SerialMatrixMultiplication {
   public static void main(String[] args) {
     long startTime = System.currentTimeMillis();
 
-    matrix1 = MatrixMultiply.fillMatrix(5, 5);
-    matrix2 = MatrixMultiply.fillMatrix(5, 5);
+    matrix1 = MatrixUtilities.fillMatrix(100, 100);
+    matrix2 = MatrixUtilities.fillMatrix(100, 100);
 
     // final matrix has the number of columns from matrix 1 and number of rows of matrix 2
-    ArrayList<ArrayList<Long>> result = MatrixMultiply.fillMatrix(matrix1.size(), matrix2.get(0).size());
+    ArrayList<ArrayList<Long>> result = MatrixUtilities.fillMatrix(matrix1.size(), matrix2.get(0).size());
 
     // main loop to perform matrix multiplication
     for(int i = 0; i < matrix1.size(); i++) {
       for (int j = 0; j < matrix2.get(0).size(); j++) {
-        result.get(i).set(j, multiply(matrix1.get(i), getRow(matrix2, j)));
+        result.get(i).set(j, multiply(matrix1.get(i), MatrixUtilities.getRow(matrix2, j)));
       }
     }
 
-    MatrixMultiply.printMatrix(result);
+    MatrixUtilities.printMatrix(result);
 
     long endTime = System.currentTimeMillis();
     System.out.println("This took " + (endTime-startTime) + " milliseconds!");
@@ -37,11 +37,5 @@ public class SerialMatrixMultiplication {
   private static long multiply(ArrayList<Long> column, ArrayList<Long> row) {
     return column.stream()
       .collect(Collectors.summingLong(l -> l*row.get(column.indexOf(l))));
-  }
-
-  private static ArrayList<Long> getRow(ArrayList<ArrayList<Long>> matrix, int index) {
-    return matrix.stream()
-      .map(l -> l.get(index))
-      .collect(Collectors.toCollection(ArrayList::new));
   }
 }
