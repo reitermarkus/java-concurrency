@@ -2,8 +2,7 @@ package ex1.task3;
 
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -19,8 +18,10 @@ public class ParallelMatrixMultiplication {
   private static ArrayList<ArrayList<Long>> matrix2 = new ArrayList<>();
 
   public static void main(String[] args) {
-    matrix1 = fillMatrix(4, 4);
-    matrix2 = fillMatrix(4, 4);
+    long startTime = System.currentTimeMillis();
+
+    matrix1 = fillMatrix(100, 100);
+    matrix2 = fillMatrix(100, 100);
 
     // final matrix has the number of columns from matrix 1 and number of rows of matrix 2
 
@@ -30,6 +31,7 @@ public class ParallelMatrixMultiplication {
     Stream<Future<ArrayList<ArrayList<Long>>>> futures = IntStream.rangeClosed(1, threadCount).mapToObj(i -> {
       int minColumn = (i * (matrix1.size()/threadCount)) - (matrix1.size()/threadCount);
       int maxColumn = (i * (matrix1.size()/threadCount)) - 1;
+      if(i == threadCount) {maxColumn = matrix1.size();}
       Callable<ArrayList<ArrayList<Long>>> task = new MatrixMultiply(matrix1, matrix2, minColumn, maxColumn);
       return pool.submit(task);
     });
@@ -45,11 +47,24 @@ public class ParallelMatrixMultiplication {
       });
 
     ArrayList<ArrayList<Long>> result = lists
+      .filter(Objects::nonNull)
       .flatMap(i -> i.stream())
       .collect(Collectors.toCollection(ArrayList::new));
 
-    System.out.println(result);
+    pool.shutdown();
 
+    printMatrix(result);
+
+    long endTime = System.currentTimeMillis();
+    System.out.println("This took " + (endTime-startTime) + " milliseconds!");
+  }
+
+  private static void printMatrix(ArrayList<ArrayList<Long>> matrix) {
+    System.out.println("[");
+    for(int i = 0; i < matrix.size(); i++){
+      System.out.println(matrix.get(i));
+    }
+    System.out.println("]");
   }
 
   private static ArrayList<ArrayList<Long>> fillMatrix(int rows, int columns) {

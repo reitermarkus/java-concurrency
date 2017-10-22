@@ -2,8 +2,6 @@ package ex1.task3;
 
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -15,8 +13,10 @@ public class SerialMatrixMultiplication {
   private static ArrayList<ArrayList<Long>> matrix2 = new ArrayList<>();
 
   public static void main(String[] args) {
-    matrix1 = fillMatrix(4, 4);
-    matrix2 = fillMatrix(4, 4);
+    long startTime = System.currentTimeMillis();
+
+    matrix1 = fillMatrix(100, 100);
+    matrix2 = fillMatrix(100, 100);
 
     // final matrix has the number of columns from matrix 1 and number of rows of matrix 2
     ArrayList<ArrayList<Long>> result = fillMatrix(matrix1.size(), matrix2.get(0).size());
@@ -28,7 +28,10 @@ public class SerialMatrixMultiplication {
       }
     }
 
-    System.out.println(result);
+    printMatrix(result);
+
+    long endTime = System.currentTimeMillis();
+    System.out.println("This took " + (endTime-startTime) + " milliseconds!");
   }
 
   private static long multiply(ArrayList<Long> column, ArrayList<Long> row) {
@@ -40,6 +43,14 @@ public class SerialMatrixMultiplication {
     return matrix.stream()
       .map(l -> l.get(index))
       .collect(Collectors.toCollection(ArrayList::new));
+  }
+
+  private static void printMatrix(ArrayList<ArrayList<Long>> matrix) {
+    System.out.println("[");
+    for(int i = 0; i < matrix.size(); i++){
+      System.out.println(matrix.get(i));
+    }
+    System.out.println("]");
   }
 
   private static ArrayList<ArrayList<Long>> fillMatrix(int rows, int columns) {
