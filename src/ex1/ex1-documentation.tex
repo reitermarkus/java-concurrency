@@ -15,9 +15,8 @@
 
 
 	\section{Java Threads}
-
-
-    To find out how many threads a system can handle, we created an infinite loop which creates threads (each of which calls \textt{Thread.yield()} in an infinite loop) until an \texttt{OutOfMemoryError} occurs.
+	The \textit{TwoThreads.java} program implements two threads with the \texttt{Runnable} interface. The threads print out their priority and status and then terminate.\\
+    To find out how many threads a system can handle, we created an infinite loop which creates threads (each of which calls \texttt{Thread.yield()} in an infinite loop) until an \texttt{OutOfMemoryError} occurs.
 
 	\section{Vector Multiplication}
 		\textit{SerialVectorMultiplication.java} implements the serial multiplication of two verctors (also known as \textit{Dot Product}). The two vectors are represented by a \texttt{Vector} datastructure. A simple \texttt{stream} is used to calculate the result. A \texttt{stream} gets generated from the first vector, then the \texttt{.map} functon is used to replace every element by the same element multiplied with the element from the second vector at the same index. After that the \texttt{.collect(Collectors.summingLong())} function is used to sum everything together.\bigbreak
@@ -25,6 +24,10 @@
 		So every thread is basically using the exact same code as the one from the serial version, but is only calculating a local sum for a part of the vector.
 		After computation, every thread returns his local sum, which are added together to get the final result.
 
+  \section{Matrix Multiplication}
+  
+  \textit{SerialMetrixMultiplication.java} implements the serial multiplication of two matrices. A \texttt{ArrayList<ArrayList<Long>>} datastructure is used to represent a matrix, where the inner \texttt{ArrayList<Long>} is representing a column. The main part is a for loop that iterates over the result matrix, and calculates every number.\bigbreak
+  \textit{ParallelMatrixMultiplication.java} implements our parallel approach of multiplying two matrices. It uses the same datastructure as the serial version, but splits the workload within a threadpool. Every thread gets an mostly equal part of the resultmatrix's rows to calculate. \textit{MatrixMultiply.java} is the callable object each thread calls. The threads each return a part of the resultmatrix. The \texttt{stream} of those parts is flattened using the \texttt{flatMap()}-function and then put together using the \texttt{collect()}-function.
 
   \section{Calculating $\uppi$}
 
