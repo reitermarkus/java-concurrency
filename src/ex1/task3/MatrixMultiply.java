@@ -22,7 +22,7 @@ public class MatrixMultiply implements Callable<ArrayList<ArrayList<Long>>> {
     ArrayList<ArrayList<Long>> result = new ArrayList<>();
 
     // main loop to perform matrix multiplication
-    for(int i = minColumn; i <= maxColumn; i++) {
+    for(int i = minColumn; i < maxColumn; i++) {
       ArrayList<Long> newColumn = new ArrayList<>();
       for (int j = 0; j < matrix2.get(0).size(); j++) {
         newColumn.add(j, multiply(matrix1.get(i), getRow(matrix2, j)));
@@ -31,6 +31,18 @@ public class MatrixMultiply implements Callable<ArrayList<ArrayList<Long>>> {
     }
 
     return result;
+  }
+
+  public static ArrayList<ArrayList<Long>> fillMatrix(int rows, int columns) {
+    ArrayList<ArrayList<Long>> tempMatrix = new ArrayList<>();
+    for (long column = 0; column < columns; column++) {
+      ArrayList<Long> columnTemp = new ArrayList<>();
+      for (long row = 0; row < rows; row++) {
+        columnTemp.add(row + 1);
+      }
+      tempMatrix.add(columnTemp);
+    }
+    return tempMatrix;
   }
 
   private long multiply(ArrayList<Long> column, ArrayList<Long> row) {
@@ -42,5 +54,13 @@ public class MatrixMultiply implements Callable<ArrayList<ArrayList<Long>>> {
     return matrix.stream()
       .map(l -> l.get(index))
       .collect(Collectors.toCollection(ArrayList::new));
+  }
+
+  public static void printMatrix(ArrayList<ArrayList<Long>> matrix) {
+    System.out.println("[");
+    for(int i = 0; i < matrix.size(); i++){
+      System.out.println(matrix.get(i));
+    }
+    System.out.println("]");
   }
 }

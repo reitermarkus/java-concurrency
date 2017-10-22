@@ -15,11 +15,11 @@ public class SerialMatrixMultiplication {
   public static void main(String[] args) {
     long startTime = System.currentTimeMillis();
 
-    matrix1 = fillMatrix(100, 100);
-    matrix2 = fillMatrix(100, 100);
+    matrix1 = MatrixMultiply.fillMatrix(5, 5);
+    matrix2 = MatrixMultiply.fillMatrix(5, 5);
 
     // final matrix has the number of columns from matrix 1 and number of rows of matrix 2
-    ArrayList<ArrayList<Long>> result = fillMatrix(matrix1.size(), matrix2.get(0).size());
+    ArrayList<ArrayList<Long>> result = MatrixMultiply.fillMatrix(matrix1.size(), matrix2.get(0).size());
 
     // main loop to perform matrix multiplication
     for(int i = 0; i < matrix1.size(); i++) {
@@ -28,7 +28,7 @@ public class SerialMatrixMultiplication {
       }
     }
 
-    printMatrix(result);
+    MatrixMultiply.printMatrix(result);
 
     long endTime = System.currentTimeMillis();
     System.out.println("This took " + (endTime-startTime) + " milliseconds!");
@@ -43,25 +43,5 @@ public class SerialMatrixMultiplication {
     return matrix.stream()
       .map(l -> l.get(index))
       .collect(Collectors.toCollection(ArrayList::new));
-  }
-
-  private static void printMatrix(ArrayList<ArrayList<Long>> matrix) {
-    System.out.println("[");
-    for(int i = 0; i < matrix.size(); i++){
-      System.out.println(matrix.get(i));
-    }
-    System.out.println("]");
-  }
-
-  private static ArrayList<ArrayList<Long>> fillMatrix(int rows, int columns) {
-    ArrayList<ArrayList<Long>> tempMatrix = new ArrayList<>();
-    for (long column = 0; column < columns; column++) {
-      ArrayList<Long> columnTemp = new ArrayList<>();
-      for (long row = 0; row < rows; row++) {
-        columnTemp.add(row + 1);
-      }
-      tempMatrix.add(columnTemp);
-    }
-    return tempMatrix;
   }
 }

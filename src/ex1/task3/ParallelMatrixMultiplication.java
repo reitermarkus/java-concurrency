@@ -30,7 +30,7 @@ public class ParallelMatrixMultiplication {
 
     Stream<Future<ArrayList<ArrayList<Long>>>> futures = IntStream.rangeClosed(1, threadCount).mapToObj(i -> {
       int minColumn = (i * (matrix1.size()/threadCount)) - (matrix1.size()/threadCount);
-      int maxColumn = (i * (matrix1.size()/threadCount)) - 1;
+      int maxColumn = (i * (matrix1.size()/threadCount));
       if(i == threadCount) {maxColumn = matrix1.size();}
       Callable<ArrayList<ArrayList<Long>>> task = new MatrixMultiply(matrix1, matrix2, minColumn, maxColumn);
       return pool.submit(task);
@@ -53,30 +53,9 @@ public class ParallelMatrixMultiplication {
 
     pool.shutdown();
 
-    printMatrix(result);
+    MatrixMultiply.printMatrix(result);
 
     long endTime = System.currentTimeMillis();
     System.out.println("This took " + (endTime-startTime) + " milliseconds!");
   }
-
-  private static void printMatrix(ArrayList<ArrayList<Long>> matrix) {
-    System.out.println("[");
-    for(int i = 0; i < matrix.size(); i++){
-      System.out.println(matrix.get(i));
-    }
-    System.out.println("]");
-  }
-
-  private static ArrayList<ArrayList<Long>> fillMatrix(int rows, int columns) {
-    ArrayList<ArrayList<Long>> mTemp = new ArrayList<>();
-    for (long c = 0; c < columns; c++) {
-      ArrayList<Long> cTemp = new ArrayList<>();
-      for (long r = 0; r < rows; r++) {
-        cTemp.add(r + 1);
-      }
-      mTemp.add(cTemp);
-    }
-    return mTemp;
-  }
-
 }
