@@ -9,3 +9,5 @@
 *.aux
 *.log
 *.gz
+*.lb
+*.pdf

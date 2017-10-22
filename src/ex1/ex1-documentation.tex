@@ -3,25 +3,33 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
+\usepackage{upgreek}
 
 
 \begin{document}
 	\title{Exercise Sheet 1 - Documentation}
 	\date{}
 	\author{Dötlinger Lukas, Kaltschmid Michael, Reiter Markus}
-	
+
 	\maketitle
 
-	
+
 	\section{Java Threads}
-		
-	
+
+
 	\section{Vector Multiplication}
 		\textit{SerialVectorMultiplication.java} implements the serial multiplication of two verctors (also known as \textit{Dot Product}). The two vectors are represented by a \texttt{Vector} datastructure. A simple \texttt{stream} is used to calculate the result. A \texttt{stream} gets generated from the first vector, then the \texttt{.map} functon is used to replace every element by the same element multiplied with the element from the second vector at the same index. After that the \texttt{.collect(Collectors.summingLong())} function is used to sum everything together.\bigbreak
 		\textit{ParallelVectorMultiplication.java} and \textit{Multiplication.java} implement the parallel multiplication of two vectors. A \texttt{ThreadPool} is beeing created at the beginning. The \texttt{Multiplication.java} is the callable object to be called by the threads. When submitting a task to a thread, the start and end vectorindices are calculated and beeing submitted to the thread along with the two vectors, which are created the same way as in the serial approach.\\ 
 		So every thread is basically using the exact same code as the one from the serial version, but is only calculating a local sum for a part of the vector.
 		After computation, every thread returns his local sum, which are added together to get the final result.
-		
-		
-	
+
+
+  \section{Calculating $\uppi$}
+
+  To calculate $\uppi$ with the Monte Carlo Method, you have $n$ tries, and for each try you have to generate two random numbers between 0 and 1 and sum their squares. If the sum is $< 1$, this counts as a success. The number of successes divided by the number of tries approximates $\uppi / 4$.
+
+  The serial version of this algorithm is implemented as a for-loop from $0$ to $n$, where $n$ is the number of total tries. Inside the loop, a counter variable is incremented if the try is successful. After the loop, the number of successes is divided by the number of total tries.
+
+  The parallel version is also given the number of total tries, which is divided by the number of threads. Each thread executes a \texttt{Callable} which returns a \texttt{Long} with the count of successes, which is submitted to a thread pool. The main thread waits for all \texttt{Future}s to finish, sums them and divides this sum by the amount of total tries.
+
 \end{document}
