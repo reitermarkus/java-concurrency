@@ -17,6 +17,8 @@
 	\section{Java Threads}
 
 
+    To find out how many threads a system can handle, we created an infinite loop which creates threads (each of which calls \textt{Thread.yield()} in an infinite loop) until an \texttt{OutOfMemoryError} occurs.
+
 	\section{Vector Multiplication}
 		\textit{SerialVectorMultiplication.java} implements the serial multiplication of two verctors (also known as \textit{Dot Product}). The two vectors are represented by a \texttt{Vector} datastructure. A simple \texttt{stream} is used to calculate the result. A \texttt{stream} gets generated from the first vector, then the \texttt{.map} functon is used to replace every element by the same element multiplied with the element from the second vector at the same index. After that the \texttt{.collect(Collectors.summingLong())} function is used to sum everything together.\bigbreak
 		\textit{ParallelVectorMultiplication.java} and \textit{Multiplication.java} implement the parallel multiplication of two vectors. A \texttt{ThreadPool} is beeing created at the beginning. The \texttt{Multiplication.java} is the callable object to be called by the threads. When submitting a task to a thread, the start and end vectorindices are calculated and beeing submitted to the thread along with the two vectors, which are created the same way as in the serial approach.\\ 
