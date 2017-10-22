@@ -8,9 +8,7 @@ import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-/**
- * Created by Lukas Dötlinger.
- */
+
 public class ParallelVectorMultiplication {
 
   private static Vector<Long> vector1 = new Vector<>();
