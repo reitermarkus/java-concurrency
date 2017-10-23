@@ -2,6 +2,8 @@ package ex1.task2;
 
 import java.util.Vector;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 /**
  * Created by Lukas Dötlinger.
@@ -14,10 +16,10 @@ public class SerialVectorMultiplication {
   public static void main(String[] args) {
     long startTime = System.currentTimeMillis();
 
-    for(int i = 1; i <= 10000; i++) {
-      vector1.add((long) i);
-      vector2.add((long) i);
-    }
+    vector1 = LongStream.rangeClosed(1L, 10000L)
+      .mapToObj(i -> i)
+      .collect(Collectors.toCollection(Vector::new));
+    vector2 = vector1;
 
     long result = vector1.stream()
       .map(j -> j*vector2.get(vector1.indexOf(j)))

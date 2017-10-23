@@ -5,7 +5,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 
@@ -17,10 +19,10 @@ public class ParallelVectorMultiplication {
   public static void main(String[] args) {
     long startTime = System.currentTimeMillis();
 
-    for(int i = 1; i <= 10000; i++){
-      vector1.add((long) i);
-      vector2.add((long) i);
-    }
+    vector1 = LongStream.rangeClosed(1L, 10000L)
+      .mapToObj(i -> i)
+      .collect(Collectors.toCollection(Vector::new));
+    vector2 = vector1;
     final int vecSize = vector1.size();
 
     final int threadCount = Runtime.getRuntime().availableProcessors();
