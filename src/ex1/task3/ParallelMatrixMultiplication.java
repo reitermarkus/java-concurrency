@@ -36,20 +36,18 @@ public class ParallelMatrixMultiplication {
       return pool.submit(task);
     });
 
-    Stream<ArrayList<ArrayList<Long>>> lists = futures
+    ArrayList<ArrayList<Long>> result = futures
       .map(i -> {
         try {
           return i.get();
         } catch (Exception e) {
           e.printStackTrace();
           return null;
-        }
-      });
-
-    ArrayList<ArrayList<Long>> result = lists
+        }})
       .filter(Objects::nonNull)
       .flatMap(i -> i.stream())
-      .collect(Collectors.toCollection(ArrayList::new));
+      .collect(Collectors.toCollection(ArrayList::new));;
+
 
     pool.shutdown();
 
