@@ -3,6 +3,7 @@ package ex1.task3;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class MatrixMultiply implements Callable<ArrayList<ArrayList<Long>>> {
 
@@ -19,18 +20,14 @@ public class MatrixMultiply implements Callable<ArrayList<ArrayList<Long>>> {
   }
 
   public ArrayList<ArrayList<Long>> call() {
-    ArrayList<ArrayList<Long>> result = new ArrayList<>();
-
-    // main loop to perform matrix multiplication
-    for(int i = minColumn; i < maxColumn; i++) {
-      ArrayList<Long> newColumn = new ArrayList<>();
-      for (int j = 0; j < matrix2.get(0).size(); j++) {
-        newColumn.add(j, multiply(matrix1.get(i), MatrixUtilities.getRow(matrix2, j)));
-      }
-      result.add(newColumn);
-    }
-
-    return result;
+    // main stream to perform matrix multiplication
+    return IntStream.range(minColumn, maxColumn)
+      .mapToObj(i -> {
+        return IntStream.range(0, matrix2.get(0).size())
+          .mapToObj(j -> multiply(matrix1.get(i), MatrixUtilities.getRow(matrix2, j)))
+          .collect(Collectors.toCollection(ArrayList::new));
+      })
+      .collect(Collectors.toCollection(ArrayList::new));
   }
 
   public long multiply(ArrayList<Long> column, ArrayList<Long> row) {
