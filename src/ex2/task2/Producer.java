@@ -5,10 +5,12 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.lang.Thread.sleep;
+
 /**
  * Created by Lukas Dötlinger.
  */
-public class Producer extends Thread{
+public class Producer implements Runnable{
 
   private Buffer buffer;
 
@@ -30,7 +32,7 @@ public class Producer extends Thread{
       });
 
     try {
-      sleep(ThreadLocalRandom.current().nextLong(0, 3 + 1));
+      Thread.sleep(ThreadLocalRandom.current().nextLong(0, 3 + 1));
     } catch (InterruptedException e) {
       e.printStackTrace();
     }

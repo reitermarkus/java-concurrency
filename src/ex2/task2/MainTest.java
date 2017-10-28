@@ -11,7 +11,10 @@ public class MainTest{
     Producer producer = new Producer(buffer);
     Consumer consumer = new Consumer(buffer);
 
-    producer.start();
-    consumer.start();
+    Thread p = new Thread(producer);
+    Thread c = new Thread(consumer);
+
+    p.start();
+    c.start();
   }
 }

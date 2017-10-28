@@ -1,11 +1,11 @@
 package ex2.task2;
 
-import java.util.concurrent.ThreadLocalRandom;
+import static java.lang.Thread.sleep;
 
 /**
  * Created by Lukas Dötlinger.
  */
-public class Consumer extends Thread {
+public class Consumer implements Runnable {
 
   private Buffer buffer;
 
@@ -15,7 +15,8 @@ public class Consumer extends Thread {
 
   public void consume(){
     while(buffer.size() > 0){
-      System.out.println("Consumer consumed "+buffer.get());
+      int e = buffer.get();
+      System.out.println("Consumer consumed "+ e);
     }
   }
 
@@ -23,7 +24,7 @@ public class Consumer extends Thread {
     consume();
 
     try {
-      sleep(2);
+      Thread.sleep(2);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
