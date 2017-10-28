@@ -32,7 +32,7 @@ public class Producer implements Runnable{
       });
 
     try {
-      Thread.sleep(ThreadLocalRandom.current().nextLong(0, 3 + 1));
+      Thread.sleep(ThreadLocalRandom.current().nextLong(100, 300 + 1));
     } catch (InterruptedException e) {
       e.printStackTrace();
     }

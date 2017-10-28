@@ -24,7 +24,7 @@ public class Consumer implements Runnable {
     consume();
 
     try {
-      Thread.sleep(2);
+      Thread.sleep(200);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
