@@ -1,0 +1,29 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{upgreek}
+
+
+\begin{document}
+	\title{Exercise Sheet 2 - Documentation}
+	\date{}
+	\author{Dötlinger Lukas, Kaltschmid Michael, Reiter Markus}
+
+	\maketitle
+
+	\section{Volatile/Synchronize}
+
+  \section{Producer – Consumer (Problem 1)}
+
+  \section{Producer – Consumer (Problem 2)}
+
+  The \texttt{Buffer} class is implemented using a \texttt{List<Integer>} and has three methods. \texttt{waitUntilAvailable()} waits until the array contains at least one value using the \texttt{wait()} method. \texttt{put(Integer number)} adds a value to the list and calls \texttt{notifyAll()} to wake up the waiting threads. \texttt{get()} simply returns the first value of the list and removes it.
+
+  Then there is the \texttt{Producer} class (\texttt{Runnable}), which is initialized with a \texttt{Buffer} instance. The producer adds random numbers using \texttt{Buffer::put} until \texttt{0} is encountered.
+
+  The \texttt{Consumer} class (\texttt{Runnable}) is initialized with a \texttt{List<Buffer>}. In the \texttt{run()} method, it waits for all \texttt{Buffer}s to have a value using \texttt{Buffer::waitUntilAvailable}, and after that gets them using \texttt{Buffer::get}. If any of these values is \texttt{0}, the loop is stopped.
+
+  The \texttt{MainTest} class creates \texttt{4} \texttt{Buffer}s, which are passed to \texttt{4} \texttt{Producer} threads and to one \texttt{Consumer} thread.
+\end{document}
