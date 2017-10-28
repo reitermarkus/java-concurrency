@@ -13,9 +13,11 @@ public class Buffer {
         }
       }
 
-      try {
-        wait();
-      } catch (InterruptedException e) { }
+      synchronized (this) {
+        try {
+          wait();
+        } catch (InterruptedException e) { }
+      }
     }
   }
 
