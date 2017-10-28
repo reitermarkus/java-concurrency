@@ -8,13 +8,14 @@ public class MainTest {
     int producerCount = 4;
 
     List<Buffer> buffers = IntStream.range(0, producerCount)
-      .mapToObj(i -> new Buffer())
+      .mapToObj(i -> new Buffer("Buffer " + (i + 1)))
       .collect(Collectors.toList());
 
     List<Thread> producers = IntStream.range(0, producerCount)
-      .mapToObj(i -> new Thread(new Producer(buffers.get(i))))
+      .mapToObj(i -> new Thread(new Producer(buffers.get(i)), "Producer " + (i + 1)))
       .collect(Collectors.toList());
-    Thread consumer = new Thread(new Consumer(buffers));
+
+    Thread consumer = new Thread(new Consumer(buffers), "Consumer 1");
 
     producers.forEach(p -> p.start());
     consumer.start();

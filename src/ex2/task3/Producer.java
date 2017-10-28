@@ -13,6 +13,8 @@ public class Producer implements Runnable {
   }
 
   public void run() {
+    System.out.println(Thread.currentThread().getName() + " started producing.");
+
     Random randomizer = ThreadLocalRandom.current();
 
     while (true) {
@@ -21,7 +23,7 @@ public class Producer implements Runnable {
       this.buffer.put(number);
 
       if (number == 0) {
-        System.out.println("Stopped producing.");
+        System.out.println(Thread.currentThread().getName() + " stopped producing.");
         break;
       }
     }

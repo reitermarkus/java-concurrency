@@ -6,22 +6,28 @@ import java.util.stream.*;
 public class Consumer implements Runnable {
   private List<Buffer> buffers;
 
-  Consumer(List<Buffer> buffers) {
+  Consumer(final List<Buffer> buffers) {
     this.buffers = buffers;
   }
 
   public void run() {
-    while (true) {
-      this.buffers.forEach(Buffer::waitUntilAvailable);
+    System.out.println(Thread.currentThread().getName() + " started consuming.");
 
-      List<Integer> numbers = this.buffers.stream().map(b -> b.get()).collect(Collectors.toList());
+    while (!buffers.isEmpty()) {
+      this.buffers.stream().forEach(Buffer::waitUntilAvailable);
 
+      this.buffers = this.buffers.stream()
+        .filter(b -> {
+          Integer number = b.get();
 
+          if (number == 0) {
+            System.out.println(Thread.currentThread().getName() + " stopped consuming from " + b.getName() + ".");
+            return false;
+          }
 
-      if (numbers.contains(0)) {
-        System.out.println("Stopped consuming, got " + numbers + ".");
-        break;
-      }
+          return true;
+        })
+        .collect(Collectors.toList());
     }
   }
 }
