@@ -26,7 +26,7 @@ public class Producer implements Runnable{
       .forEach(i -> {this.buffer.add(i);
         System.out.println("Producer produced "+i);
         try {
-          Thread.sleep(ThreadLocalRandom.current().nextLong(100, 300 + 1));
+          Thread.sleep(ThreadLocalRandom.current().nextLong(1000, 3000 + 1));
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
