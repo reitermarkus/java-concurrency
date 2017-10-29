@@ -14,17 +14,17 @@ public class Producer implements Runnable{
     this.buffer = buffer;
   }
 
-  public ArrayList<Integer> generate(){
+  public IntStream generate(){
     return IntStream.generate(() -> ThreadLocalRandom.current().nextInt(0, 100 + 1))
-      .takeWhile(i -> i > 0)
-      .boxed()
-      .collect(Collectors.toCollection(ArrayList::new));
+      .takeWhile(i -> i > 0);
   }
 
   public void run(){
-    generate().stream()
-      .forEach(i -> {this.buffer.add(i);
+    generate()
+      .forEachOrdered(i -> {
+        this.buffer.add(i);
         System.out.println("Producer produced "+i);
+
         try {
           Thread.sleep(ThreadLocalRandom.current().nextLong(1000, 3000 + 1));
         } catch (InterruptedException e) {
