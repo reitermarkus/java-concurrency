@@ -24,28 +24,28 @@
     \item The value for parameter in Thread1 is two and the result does not change.
     \item The value for parameter in Thread1 is two and the result does not change.
     \item Synchronized does not change the results.
-    \item 
-    \begin{align*}
-	    \begin{doublespacing}
-		    \begin{tabular}{|*{2}{c|}}
-				  \hline
-				  $type$ & $ms$ \\
-				  \hline
-				  no synchronization & 48 \\
-				  \hline
-				  volatile & 46 \\
-				  \hline
-				  synchronization & 53 \\
-				  \hline
-				\end{tabular}
-			\end{doublespacing}
-		\end{align*}
+    \item
+    \begin{doublespacing}
+      \begin{align*}
+        \begin{tabular}{|*{2}{c|}}
+          \hline
+          $type$ & $ms$ \\
+          \hline
+          no synchronization & 48 \\
+          \hline
+          volatile & 46 \\
+          \hline
+          synchronization & 53 \\
+          \hline
+        \end{tabular}
+      \end{align*}
+    \end{doublespacing}
 
 		As you can already see the results, when going for the approach of guaranteeing the correct execution sequence with \texttt{wait()} and \texttt{notify()} do not change at all. Doing benchmarks on three statements executed by two threads was also rather difficult because the results barely differ at all. You can kind of see a pattern where volatile is the fastest and synchronized calls are the slowest on average over multiple runs.
   \end{enumerate}
 
   \section{Producer – Consumer (Problem 1)}
-  
+
   The \texttt{Buffer} class is implemented using a \texttt{ArrayList<Integer>} and has three methods, which are \texttt{get()}, which deletes an element in the buffer and returns it, \texttt{add()}, which is used to add an element to the buffer, and \texttt{size()}, which returns the number of elements in the buffer. The buffer also has a boolean variable indicating if the producer is finished.\\
   Then there is the \texttt{Producer} class, which is initialized with a \texttt{Buffer} instance. Since this class implements a thread, it has a \texttt{run()} method, in which the method \texttt{generate()} is called. This \texttt{generate()} method creates an \texttt{ArrayList<Integer>} using \texttt{IntStream.generate()}, to generate an IntStream of random numbers until a 0 occurs. In the \texttt{run()} method, the thread is adding the generated random numbers to the buffer. After adding an element he sleeps random seconds (between 1 and 3).\\
   Then there is the \texttt{Consumer} class, which is also initialized with a \texttt{Buffer} instance. It has a method \texttt{consume()}, which takes elements out of the buffer as long as \texttt{buffer.size() > 0}. Since this class represents the consuming thread, it also has a \texttt{run()} method, which calls the \texttt{consume()} method and sleeps for 2 seconds in a \texttt{while}-loop as long as the producer hasn't finished. Then he calls the \texttt{consume()} method one more time befor finishing.\\
