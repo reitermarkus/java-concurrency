@@ -2,15 +2,15 @@ package ex2.task2;
 
 import java.util.ArrayList;
 
-/**
- * Created by Lukas Dötlinger.
- */
+
 public class Buffer {
 
   private ArrayList<Integer> buffer;
+  private boolean endOfProduction;
 
   public Buffer(){
     buffer = new ArrayList<>();
+    endOfProduction = false;
   }
 
   public synchronized Integer get(){
@@ -29,4 +29,11 @@ public class Buffer {
     return buffer.size();
   }
 
+  public boolean isEndOfProduction() {
+    return endOfProduction;
+  }
+
+  public void setEndOfProduction(boolean endOfProduction) {
+    this.endOfProduction = endOfProduction;
+  }
 }

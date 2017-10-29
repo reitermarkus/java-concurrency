@@ -1,10 +1,6 @@
 package ex2.task2;
 
-import static java.lang.Thread.sleep;
 
-/**
- * Created by Lukas Dötlinger.
- */
 public class Consumer implements Runnable {
 
   private Buffer buffer;
@@ -21,12 +17,14 @@ public class Consumer implements Runnable {
   }
 
   public void run(){
-    consume();
+    while(!buffer.isEndOfProduction()){
+      consume();
 
-    try {
-      Thread.sleep(200);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
+      try {
+        Thread.sleep(200);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
 
     consume();
