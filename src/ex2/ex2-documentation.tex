@@ -1,10 +1,14 @@
+% !TEX TS-program = xelatex
+%
 \documentclass{article}
 \usepackage[T1]{fontenc}
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
+\usepackage{amsmath}
 \usepackage{upgreek}
-
+\usepackage{enumerate}
+\usepackage{setspace}% http://ctan.org/pkg/setspace
 
 \begin{document}
 	\title{Exercise Sheet 2 - Documentation}
@@ -14,6 +18,31 @@
 	\maketitle
 
 	\section{Volatile/Synchronize}
+
+	\begin{enumerate}[a/]
+    \item The value for parameter in Thread1 is two and the result does not change.
+    \item The value for parameter in Thread1 is two and the result does not change.
+    \item The value for parameter in Thread1 is two and the result does not change.
+    \item Synchronized does not change the results.
+    \item 
+    \begin{align*}
+	    \begin{doublespacing}
+		    \begin{tabular}{|*{2}{c|}}
+				  \hline
+				  $type$ & $ms$ \\
+				  \hline
+				  no synchronization & 48 \\
+				  \hline
+				  volatile & 46 \\
+				  \hline
+				  synchronization & 53 \\
+				  \hline
+				\end{tabular}
+			\end{doublespacing}
+		\end{align*}
+
+		As you can already see the results, when going for the approach of guaranteeing the correct execution sequence with \texttt{wait()} and \texttt{notify()} do not change at all. Doing benchmarks on three statements executed by two threads was also rather difficult because the results barely differ at all. You can kind of see a pattern where volatile is the fastest and synchronized calls are the slowest on average over multiple runs.
+  \end{enumerate}
 
   \section{Producer – Consumer (Problem 1)}
   

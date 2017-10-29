@@ -20,6 +20,8 @@ public class Volatile {
   }
 
   public Volatile() {
+    long startTime = System.currentTimeMillis();
+
     Thread thread1 = new Thread(() -> {
       addParameterValue();
 
@@ -32,6 +34,7 @@ public class Volatile {
       }
 
       System.out.println(getParameterValue());
+      System.out.println(("The operation took " + (System.currentTimeMillis() - startTime) + "ms"));
     });
 
     Thread thread2 = new Thread(() -> {

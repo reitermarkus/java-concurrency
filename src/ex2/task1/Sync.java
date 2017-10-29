@@ -20,6 +20,8 @@ public class Sync {
   }
 
   public Sync() {
+    long startTime = System.currentTimeMillis();
+
     Thread thread1 = new Thread(() -> {
       setParameterValue(3);
 
@@ -32,6 +34,7 @@ public class Sync {
       }
 
       System.out.println(getParameterValue());
+      System.out.println(("The operation took " + (System.currentTimeMillis() - startTime) + "ms"));
     });
 
     Thread thread2 = new Thread(() -> {
