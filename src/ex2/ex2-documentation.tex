@@ -16,14 +16,16 @@
 	\section{Volatile/Synchronize}
 
   \section{Producer – Consumer (Problem 1)}
+  
+  The \texttt{Buffer} class is implemented using a \texttt{ArrayList<Integer>} and has three methods, which are \texttt{get()}, which deletes an element in the buffer and returns it, \texttt{add()}, which is used to add an element to the buffer, and \texttt{size()}, which returns the number of elements in the buffer.\\
+  Then there is the \texttt{Producer} class, which is initialized with a \texttt{Buffer} instance. Since this class implements a thread, it has a \texttt{run()} method, in which the method \texttt{generate()} is called. This \texttt{generate()} method creates an \texttt{ArrayList<Integer>} using \texttt{IntStream.generate()}, to generate an IntStream of random numbers until a 0 occurs. In the \texttt{run()} method, the thread is adding the generated random numbers to the buffer. After that he sleeps random seconds (between 1 and 3) and then finishes.\\
+  Then there is the \texttt{Consumer} class, which is also initialized with a \texttt{Buffer} instance. It has a method \texttt{consume()}, which takes elements out of the buffer as long as \texttt{buffer.size() > 0}. Since this class represents the consuming thread, it also has a \texttt{run()} method, which calls the \texttt{consume()} method, sleeps for 2 seconds and then calls the \texttt{consume()} method again.\\
+  The last class, \texttt{MainTest}, initializes both the consumer thread and the producer thread with a created \texttt{Buffer} object. It then starts the two threads.\\
 
   \section{Producer – Consumer (Problem 2)}
 
-  The \texttt{Buffer} class is implemented using a \texttt{List<Integer>} and has three methods. \texttt{waitUntilAvailable()} waits until the array contains at least one value using the \texttt{wait()} method. \texttt{put(Integer number)} adds a value to the list and calls \texttt{notifyAll()} to wake up the waiting threads. \texttt{get()} simply returns the first value of the list and removes it.
-
-  Then there is the \texttt{Producer} class (\texttt{Runnable}), which is initialized with a \texttt{Buffer} instance. The producer adds random numbers using \texttt{Buffer::put} until \texttt{0} is encountered.
-
-  The \texttt{Consumer} class (\texttt{Runnable}) is initialized with a \texttt{List<Buffer>}. In the \texttt{run()} method, it waits for all \texttt{Buffer}s to have a value using \texttt{Buffer::waitUntilAvailable}, and after that gets them using \texttt{Buffer::get}. If any of these values is \texttt{0}, the loop is stopped.
-
+  The \texttt{Buffer} class is implemented using a \texttt{List<Integer>} and has three methods. \texttt{waitUntilAvailable()} waits until the array contains at least one value using the \texttt{wait()} method. \texttt{put(Integer number)} adds a value to the list and calls \texttt{notifyAll()} to wake up the waiting threads. \texttt{get()} simply returns the first value of the list and removes it.\\
+  Then there is the \texttt{Producer} class (\texttt{Runnable}), which is initialized with a \texttt{Buffer} instance. The producer adds random numbers using \texttt{Buffer::put} until \texttt{0} is encountered.\\
+  The \texttt{Consumer} class (\texttt{Runnable}) is initialized with a \texttt{List<Buffer>}. In the \texttt{run()} method, it waits for all \texttt{Buffer}s to have a value using \texttt{Buffer::waitUntilAvailable}, and after that gets them using \texttt{Buffer::get}. If any of these values is \texttt{0}, the loop is stopped.\\
   The \texttt{MainTest} class creates \texttt{4} \texttt{Buffer}s, which are passed to \texttt{4} \texttt{Producer} threads and to one \texttt{Consumer} thread.
 \end{document}
