@@ -1,5 +1,6 @@
 package ex3.task1;
 
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.*;
 
@@ -36,7 +37,7 @@ public class Test {
 
     Database db = new Database();
 
-    Stream<Thread> writerThreads = IntStream.range(0, writers).mapToObj(i -> new Thread(() -> {
+    List<Thread> writerThreads = IntStream.range(0, writers).mapToObj(i -> new Thread(() -> {
       while (!shutdown) {
         int index = ThreadLocalRandom.current().nextInt(arrayLength - 1);
         int value = ThreadLocalRandom.current().nextInt(1, arrayLength);
@@ -68,11 +69,11 @@ public class Test {
 
         db.releaseWrite();
 
-        System.out.println(Thread.currentThread().getName() + " wrote " + value + " to   index " + index + ".");
+        // System.out.println(Thread.currentThread().getName() + " wrote " + value + " to   index " + index + ".");
       }
-    }, "Writer " + i));
+    }, "Writer " + i)).collect(Collectors.toList());
 
-    Stream<Thread> readerThreads = IntStream.range(0, readers).mapToObj(i -> new Thread(() -> {
+    List<Thread> readerThreads = IntStream.range(0, readers).mapToObj(i -> new Thread(() -> {
       while (!shutdown) {
         int index = ThreadLocalRandom.current().nextInt(arrayLength - 1);
 
@@ -94,9 +95,9 @@ public class Test {
 
         db.releaseRead();
 
-        System.out.println(Thread.currentThread().getName() + " read  " + value + " from index " + index + ".");
+        // System.out.println(Thread.currentThread().getName() + " read  " + value + " from index " + index + ".");
       }
-    }, "Reader " + i));
+    }, "Reader " + i)).collect(Collectors.toList());
 
     writerThreads.forEach(Thread::start);
     readerThreads.forEach(Thread::start);
@@ -105,11 +106,16 @@ public class Test {
 
     shutdown = true;
 
-    Thread.sleep(500);
+    for (Thread t: writerThreads) t.join();
+    for (Thread t: readerThreads) t.join();
 
     wravg = (double)wrsum / (double)totalWrites;
     rwavg = (double)rwsum / (double)totalReads;
     wwavg = (double)wwsum / (double)totalWrites;
+
+    System.out.println();
+    System.out.println("totalReads = " + totalReads);
+    System.out.println("totalWrites = " + totalWrites);
 
     System.out.println();
     System.out.println("reads before writes:");
