@@ -2,28 +2,31 @@ package ex3.task1;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 import java.util.stream.*;
 
 public class Test {
   static volatile boolean shutdown = false;
 
-  static volatile int wrcur = 0;
-  static volatile int wrmax = 0;
-  static volatile int wrsum = 0;
-  static volatile double wravg = 0;
+  static Lock variableLock = new StampedLock().asReadLock();
 
-  static volatile int rwcur = 0;
-  static volatile int rwmax = 0;
-  static volatile int rwsum = 0;
-  static volatile double rwavg = -1;
+  static int wrcur = 0;
+  static int wrmax = 0;
+  static int wrsum = 0;
+  static double wravg = 0;
 
-  static volatile int wwcur = 0;
-  static volatile int wwmax = 0;
-  static volatile int wwsum = 0;
-  static volatile double wwavg = -1;
+  static int rwcur = 0;
+  static int rwmax = 0;
+  static int rwsum = 0;
+  static double rwavg = -1;
 
-  static volatile int totalWrites = 0;
-  static volatile int totalReads = 0;
+  static int wwcur = 0;
+  static int wwmax = 0;
+  static int wwsum = 0;
+  static double wwavg = -1;
+
+  static int totalWrites = 0;
+  static int totalReads = 0;
 
   public static void main(String[] args) throws InterruptedException {
     final int matrikelNr = 1514886;
@@ -46,6 +49,8 @@ public class Test {
 
         array[index] = value;
 
+        variableLock.lock();
+
         // Count writes before writes.
         if (wwcur > wwmax) {
           wwmax = wwcur;
@@ -67,6 +72,8 @@ public class Test {
 
         totalWrites++;
 
+        variableLock.unlock();
+
         db.releaseWrite();
 
         // System.out.println(Thread.currentThread().getName() + " wrote " + value + " to   index " + index + ".");
@@ -81,6 +88,8 @@ public class Test {
 
         int value = array[index];
 
+        variableLock.lock();
+
         // Count reads before writes.
         wrcur++;
         if (wrcur > wrmax) {
@@ -92,6 +101,8 @@ public class Test {
         rwcur = 0;
 
         totalReads++;
+
+        variableLock.unlock();
 
         db.releaseRead();
 
