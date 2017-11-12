@@ -18,16 +18,23 @@
 	\maketitle
 
   \section{Monitor Locks}
-  
+
+    The \texttt{Database} class implemented using a \texttt{ReentrantReadWriteLock}, which allows either a single writer or multiple readers to keep the lock. A \texttt{ReentrantReadWriteLock} consists of two separate locks, a read lock and a write lock.
+    The \texttt{Test} class creates some writer and reader threads based on a given matricular number. A \texttt{Database} called \texttt{db} is created, as well as fixed size integer array.
+    A writer thread calls \texttt{db.acquireWrite()}, writes a random integer to a random position in the array and then calls \texttt{db.releaseWrite()}.
+    A reader thread calls \texttt{db.acquireRead()}, reads from a random position in the array and then calls \texttt{db.releaseRead()}.
+    A writer thread increases the variable \texttt{rwcur} and \texttt{wwcur}, a reader thread increments \texttt{wrcur}.
+    A writer thread resets \texttt{wrcur} and \texttt{wwcur} and calculates the average and maximum of this value, a reader thread does the same with \texttt{rwcur}.
+    All of these actions are executed in a \texttt{while(!shutdown)} loop, and after a specified timeout in the main thread, \texttt{shutdown} is set to \texttt{true}, which causes the loops to break. The main thread then waits for all reader/writer threads to finish and prints the calculated maximum/average values.
+
   \section{Wait/Notify}
-    
 
   \section{Semaphore/Locks}
-  
+
     The java class \texttt{Semaphore.java} is a custom semaphore implementation using \texttt{Locks} in java. When initializing an instance of the semaphore, the constructor sets the capacity to the sum of digits of a randomly chosen matricular number of one of the authors. The capacity represents the number of available resources. The \texttt{Semaphore} class also has a \texttt{Lock} lock and a \texttt{Condition} condition for that lock.\\
     In the \texttt{main}-function, we initialize one instance of the \texttt{Semaphore} class and create a few threads, which are all executing the following operations: Acquire a random number of resources, print the status and then release the acquired resources.\\
-    Acquiring a resource is done by calling the function \texttt{void P(int x)}. It is calling \texttt{lock.lock()} and then checks if the number of resources (x) is available. If yes, it acquires the resources and releases the lock. If not, it calls \texttt{condition.await()}. Releasing a resource is done by calling the function \texttt{void V(x)}. It locks the lock, then releases the resources and calls \texttt{condition.signalAll()}, to notify all waiting threads, before it unlocks the lock again.\\
+    Acquiring a resource is done by calling the function \texttt{void P(int x)}. It is calling \texttt{lock.lock()} and then checks if the number of resources (x) is available. If yes, it acquires the resources and releases the lock. If not, it calls \texttt{condition.await()}. Releasing a resource is done by calling the function \texttt{void V(x)}. It locks the lock, then releases the resources and calls \texttt{condition.signalAll()}, to notify all waiting threads, before it unlocks the lock again.
 
-  
+  \section{Synchronized/Atomic}
 
 \end{document}
