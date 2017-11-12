@@ -49,6 +49,8 @@ public class Test {
 
         array[index] = value;
 
+        db.releaseWrite();
+
         variableLock.lock();
 
         // Count writes before writes.
@@ -74,8 +76,6 @@ public class Test {
 
         variableLock.unlock();
 
-        db.releaseWrite();
-
         // System.out.println(Thread.currentThread().getName() + " wrote " + value + " to   index " + index + ".");
       }
     }, "Writer " + i)).collect(Collectors.toList());
@@ -87,6 +87,8 @@ public class Test {
         db.acquireRead();
 
         int value = array[index];
+
+        db.releaseRead();
 
         variableLock.lock();
 
@@ -103,8 +105,6 @@ public class Test {
         totalReads++;
 
         variableLock.unlock();
-
-        db.releaseRead();
 
         // System.out.println(Thread.currentThread().getName() + " read  " + value + " from index " + index + ".");
       }
