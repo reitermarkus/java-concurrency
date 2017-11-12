@@ -28,6 +28,7 @@
     All of these actions are executed in a \texttt{while(!shutdown)} loop, and after a specified timeout in the main thread, \texttt{shutdown} is set to \texttt{true}, which causes the loops to break. The main thread then waits for all reader/writer threads to finish and prints the calculated maximum/average values.
 
   \section{Wait/Notify}
+    Logically \texttt{task2} works the same way as \texttt{task1} with the suttle difference that we have to keep track of the read and write state \texttt{readersCount} / \texttt{writerCount} and the introduction of a global lock \texttt{readWriteLock}. With the aforementioned states it is then possible to lock accordingly. \texttt{acquireWrite()} puts all incoming threads on hold while the \texttt{writeCount > 0}. \texttt{releaseWrite()} releases all threads. The same is true for \texttt{acquireRead()} and \texttt{releaseRead()}. The only difference here is that we check with the \texttt{readCount} instead of the \texttt{writeCount}.
 
   \section{Semaphore/Locks}
 
