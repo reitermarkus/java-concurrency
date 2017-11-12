@@ -1,0 +1,33 @@
+% !TEX TS-program = xelatex
+%
+\documentclass{article}
+\usepackage[T1]{fontenc}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{upgreek}
+\usepackage{enumerate}
+\usepackage{setspace}% http://ctan.org/pkg/setspace
+
+\begin{document}
+	\title{Exercise Sheet 3 - Documentation}
+	\date{}
+	\author{Dötlinger Lukas, Kaltschmid Michael, Reiter Markus}
+
+	\maketitle
+
+  \section{Monitor Locks}
+  
+  \section{Wait/Notify}
+    
+
+  \section{Semaphore/Locks}
+  
+    The java class \texttt{Semaphore.java} is a custom semaphore implementation using \texttt{Locks} in java. When initializing an instance of the semaphore, the constructor sets the capacity to the sum of digits of a randomly chosen matricular number of one of the authors. The capacity represents the number of available resources. The \texttt{Semaphore} class also has a \texttt{Lock} lock and a \texttt{Condition} condition for that lock.\\
+    In the \texttt{main}-function, we initialize one instance of the \texttt{Semaphore} class and create a few threads, which are all executing the following operations: Acquire a random number of resources, print the status and then release the acquired resources.\\
+    Acquiring a resource is done by calling the function \texttt{void P(int x)}. It is calling \texttt{lock.lock()} and then checks if the number of resources (x) is available. If yes, it acquires the resources and releases the lock. If not, it calls \texttt{condition.await()}. Releasing a resource is done by calling the function \texttt{void V(x)}. It locks the lock, then releases the resources and calls \texttt{condition.signalAll()}, to notify all waiting threads, before it unlocks the lock again.\\
+
+  
+
+\end{document}
