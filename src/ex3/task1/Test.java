@@ -35,7 +35,7 @@ public class Test {
 
     int[] array = new int[arrayLength];
 
-    Database db = new Database();
+    ReadWrite db = new Database();
 
     List<Thread> writerThreads = IntStream.range(0, writers).mapToObj(i -> new Thread(() -> {
       while (!shutdown) {
