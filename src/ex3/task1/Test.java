@@ -8,7 +8,7 @@ import java.util.stream.*;
 public class Test {
   static volatile boolean shutdown = false;
 
-  static Lock variableLock = new StampedLock().asReadLock();
+  static Lock variableLock = new StampedLock().asWriteLock();
 
   static int wrcur = 0;
   static int wrmax = 0;
