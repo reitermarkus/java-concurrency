@@ -7,12 +7,9 @@ public class UpdateSync {
 
   private int counter = 0;
 
-  public synchronized void modify(int val) {
+  public synchronized int modify(int val) {
     this.counter += val;
-  }
-
-  public synchronized int getCounter() {
-    return counter;
+    return this.counter;
   }
 
   public static void main(String[] args) {
@@ -21,8 +18,8 @@ public class UpdateSync {
 
     IntStream.rangeClosed(1, 10)
       .mapToObj(i -> new Thread(() -> {
-        instance.modify(ThreadLocalRandom.current().nextInt(1, 6));
-        System.out.println("Thread " + i + " increased counter to: " + instance.getCounter());
+        int value = instance.modify(ThreadLocalRandom.current().nextInt(1, 6));
+        System.out.println("Thread " + i + " increased counter to: " + value);
       }))
       .forEach(t -> t.start());
   }

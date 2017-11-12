@@ -37,4 +37,6 @@
 
   \section{Synchronized/Atomic}
 
+    The \texttt{UpdateAtomic} is implemented using an \texttt{AtomicInteger} variable. In \texttt{public int modify(int val)}, the counter is incremented using \texttt{counter.addAndGet(val)} and returned. In the \texttt{UpdateSync} class, \texttt{synchronized} is used to make the \texttt{counter += val} operation in \texttt{synchronized int modify(int val)} atomic. Both classes are tested by running 10 threads which are adding random numbers between 1 and 6 using \texttt{modify} and then printing the incremented value afterwards.
+
 \end{document}

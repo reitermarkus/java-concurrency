@@ -8,13 +8,8 @@ public class UpdateAtomic {
 
   private AtomicInteger counter = new AtomicInteger(0);
 
-  public void modify(int val) {
-    IntStream.rangeClosed(1, val)
-      .forEach(i -> counter.incrementAndGet());
-  }
-
-  public int getCounter() {
-    return counter.get();
+  public int modify(int val) {
+    return counter.addAndGet(val);
   }
 
   public static void main(String[] args) {
@@ -23,8 +18,8 @@ public class UpdateAtomic {
 
     IntStream.rangeClosed(1, 10)
       .mapToObj(i -> new Thread(() -> {
-        instance.modify(ThreadLocalRandom.current().nextInt(1, 6));
-        System.out.println("Thread " + i + " increased counter to: " + instance.getCounter());
+        int counter = instance.modify(ThreadLocalRandom.current().nextInt(1, 6));
+        System.out.println("Thread " + i + " increased counter to: " + counter);
       }))
       .forEach(t -> t.start());
   }
