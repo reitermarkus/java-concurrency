@@ -8,19 +8,17 @@ import static java.lang.Thread.sleep;
 public class Philosopher implements Runnable {
 
   private int id;
-  private boolean eating;
   private String name;
   private Table table;
 
   public Philosopher(int id, String name, Table table) {
     this.id = id;
-    this.eating = false;
     this.name = name;
     this.table = table;
   }
 
   public void eat() throws InterruptedException {
-    if (table.takeForks(id)) {
+    if (table.takeForks(id, name)) {
       sleep(3000);
       table.putBackFork(id);
     }
