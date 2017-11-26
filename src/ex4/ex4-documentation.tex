@@ -37,5 +37,41 @@
 
   \section{A Concurrent Program}
 
+  The task is to implement 4 different sorting algorithm - \texttt{Insertion Sort}, \texttt{Quick Sort}, \texttt{Merge Sort} and \texttt{Selection Sort} - where each of them run on a different \texttt{Thread}. When measuring the time complexity of all algorithms, we can see two clear winners, which are \texttt{Quick Sort} and \texttt{Merge Sort}. Those are neck on neck and far beyond the competiton especially as the sample size of the array increases. The results in this regard are not suprising eather as those two algorithms lend themselves for parallelization and have both sutable time complexities with $\mathcal{O}(n\cdot \log(n))$ on their Best-Case and Average-Case. \texttt{Insertion Sort} usually still puts up a good fight when the sample size is not too big. The Differences only really start to show as the sample size increases. Fluctuating results are to be expected as this algorithm for its Best-Case has a complexity of $\mathcal{O}(n)$ and for its Worst-Case $\mathcal {O}(n^{2})$. The worst competitor by far is \texttt{Selection Sort}. The result is somewhat suprising, because it is so consistent in its significance. Despite selection sorts terrible time complexity for every case, which is $\mathcal {O}(n^{2})$, it should still not be that far behind the rest of the algorithms.
 
+  \begin{doublespacing}
+    \begin{align*}
+      \begin{tabular}{|*{3}{c|}}
+        \hline
+        $size$ & $sort$ & $ms$ \\
+        \hline
+        100000 & Merge Sort & 122 \\
+        \hline
+        100000 & Quick Sort & 180 \\
+        \hline
+        100000 & Insertion Sort & 248 \\
+        \hline
+        100000 & Selection Sort & 10930 \\
+        \hline
+      \end{tabular}
+    \end{align*}
+  \end{doublespacing}
+
+  \begin{doublespacing}
+    \begin{align*}
+      \begin{tabular}{|*{3}{c|}}
+        \hline
+        $size$ & $sort$ & $ms$ \\
+        \hline
+        1000000 & Merge Sort & 1570 \\
+        \hline
+        1000000 & Quick Sort & 1934 \\
+        \hline
+        1000000 & Insertion Sort & 6205 \\
+        \hline
+        1000000 & Selection Sort & fail \\
+        \hline
+      \end{tabular}
+    \end{align*}
+  \end{doublespacing}
 \end{document}
