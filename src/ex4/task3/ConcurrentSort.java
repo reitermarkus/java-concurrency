@@ -1,5 +1,7 @@
 package ex4.task3;
 
+import helper.Benchmark;
+
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -160,41 +162,41 @@ public class ConcurrentSort {
     executorService.submit(() -> {
       setCyclicBarrier.run();
 
-      long startTime = System.currentTimeMillis();
-      insertionSort(randomList);
-      System.out.println("insertion sort took: " + (System.currentTimeMillis() - startTime) + "ms");
+      Benchmark.measure("insertion sort", () -> {
+        insertionSort(randomList);
+      });
     });
 
     executorService.submit(() -> {
       setCyclicBarrier.run();
 
-      long startTime = System.currentTimeMillis();
-      selectionSort(randomList);
-      System.out.println("selection sort took: " + (System.currentTimeMillis() - startTime) + "ms");
+      Benchmark.measure("selection sort", () -> {
+        selectionSort(randomList);
+      });
     });
 
     executorService.submit(() -> {
       setCyclicBarrier.run();
 
-      long startTime = System.currentTimeMillis();
-      quickSort(randomList);
-      System.out.println("quick sort took: " + (System.currentTimeMillis() - startTime) + "ms");
+      Benchmark.measure("quick sort", () -> {
+        quickSort(randomList);
+      });
     });
 
     executorService.submit(() -> {
       setCyclicBarrier.run();
 
-      long startTime = System.currentTimeMillis();
-      mergeSort(randomList);
-      System.out.println("merge sort took: " + (System.currentTimeMillis() - startTime) + "ms");
+      Benchmark.measure("merge sort", () -> {
+        mergeSort(randomList);
+      });
     });
 
     executorService.submit(() -> {
       setCyclicBarrier.run();
 
-      long startTime = System.currentTimeMillis();
-      bubbleSort(randomList);
-      System.out.println("bubble sort took: " + (System.currentTimeMillis() - startTime) + "ms");
+      Benchmark.measure("bubble sort", () -> {
+        bubbleSort(randomList);
+      });
     });
 
     executorService.shutdown();
