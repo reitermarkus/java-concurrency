@@ -1,0 +1,40 @@
+% !TEX TS-program = xelatex
+%
+\documentclass{article}
+\usepackage[T1]{fontenc}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{upgreek}
+\usepackage{enumerate}
+\usepackage{setspace}% http://ctan.org/pkg/setspace
+
+\begin{document}
+	\title{Exercise Sheet 4 - Documentation}
+	\date{}
+	\author{Dötlinger Lukas, Kaltschmid Michael, Reiter Markus}
+
+	\maketitle
+
+  \section{Locks Problem}
+
+  \subsection{Deadlock}
+
+  To show an example of a deadlock, we create two objects, \texttt{first} and \texttt{second}. Then we create two threads, the first of which synchronizes on the first object, then sleeps for 100 ms and then synchronizes on the second object. The second thread first synchronizes on the second object, sleeps for 100 ms and then synchronizes on the first object. This leads to a deadlock, because by the time both threads have slept for 100 ms, the first and second object are both locked by the opposite thread.
+
+  \subsection{Livelock}
+
+  To show an example of a livelock, we have a class \texttt{DinnerTable} which has two methods: \texttt{synchronized void someoneStartedEating()} and \texttt{synchronized boolean hasSomeOneStartedEating()}. We create a variable \texttt{DinnerTable table} and two threads which represent two people sitting at the table. The people at the table are polite, so they won't start eating unless someone else is already eating. In each thread, we wait until someone else has started eating using \texttt{while (!table.hasSomeOneStartedEating())}. If there is someone already eating, the thread also calls \texttt{table.someoneStartedEating()} and outputs a message saying the it has also started eating. This leads to a livelock, because in the beginning no one is already eating, so no thread will start eating.
+
+  \subsection{Starvation}
+
+  To show an example of starvation, we create one object which we will synchronize on. Then we create two threads. Both threads are running a loop in which they synchronize on the object and outut a message saying they are doing some work. The only difference between the two threads is that the second thread also sleeps for 500 ms in each iteration, which leads to the first thread starving.
+
+  \section{Dining Philosophers}
+
+
+  \section{A Concurrent Program}
+
+
+\end{document}
