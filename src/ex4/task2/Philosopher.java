@@ -21,7 +21,6 @@ public class Philosopher implements Runnable {
 
   public void eat() throws InterruptedException {
     if (table.takeForks(id)) {
-      System.out.println("Thread " + id + " is now eating!");
       sleep(3000);
       table.putBackFork(id);
     }

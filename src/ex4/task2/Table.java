@@ -38,6 +38,7 @@ public class Table {
     if (forks.get(leftFork(id)).isAvailable() && forks.get(rightFork(id)).isAvailable()) {
       forks.get(leftFork(id)).setAvailable(false);
       forks.get(rightFork(id)).setAvailable(false);
+      System.out.println("Thread " + id + " is now eating!");
       return true;
     }
     try {
@@ -49,11 +50,12 @@ public class Table {
     return false;
   }
 
-  public synchronized boolean putBackFork(int id) {
+  public synchronized boolean putBackFork(int id) throws InterruptedException {
     if (!forks.get(leftFork(id)).isAvailable() && !forks.get(rightFork(id)).isAvailable()) {
       forks.get(leftFork(id)).setAvailable(true);
       forks.get(rightFork(id)).setAvailable(true);
       notifyAll();
+      wait();
       return true;
     }
     return false;
