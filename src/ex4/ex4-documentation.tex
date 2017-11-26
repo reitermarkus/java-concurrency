@@ -33,6 +33,7 @@
 
   \section{Dining Philosophers}
 
+  This task is implemented using 3 Java classes: \texttt{Fork.java}, \texttt{Table.java} and \texttt{Philosopher.java}. \texttt{Fork.java} represents a single object of a Fork. \texttt{Philosopher.java} represents a single philosopher and implements the \texttt{Runnable} interface, so each Philosopher can be executed. \texttt{Table.java} is the class that runs everything. It initializes and equal amount of philosophers and forks. The table has two synchronized methods, \texttt{takeFork()} and \texttt{putBackFork()}, which are used by philospher to take and put back two forks. If a philosopher tries to take a fork and fails, the \texttt{wait()} it is called on it, otherwise it takes the forks, thinks for 3 seconds and then is put waiting, to ensure others can grab the forks aswell. Thus there are no starvations. If forks are put back, \texttt{notifyAll()} is called, to wake up all thinking philosophers. Therefor a deadlock is not possible.
 
   \section{A Concurrent Program}
 
