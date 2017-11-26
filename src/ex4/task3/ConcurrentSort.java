@@ -1,16 +1,14 @@
 package ex4.task3;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
  * Created by Michael Kaltschmid on 25.11.2017.
  */
 public class ConcurrentSort {
-  public static <T extends Comparable<? super T>> void insertSort(List<T> list) {
+  public static <T extends Comparable<? super T>> List<T> insertionSort(List<T> list) {
     for (int i = 1; i < list.size(); i++) {
       T value = list.get(i);
       int j = i - 1;
@@ -22,9 +20,11 @@ public class ConcurrentSort {
 
       list.set(j + 1, value);
     }
+
+    return list;
   }
 
-  public static <T extends Comparable<? super T>> void selectionSort(List<T> list) {
+  public static <T extends Comparable<? super T>> List<T> selectionSort(List<T> list) {
     for (int i = 0; i < list.size() - 1; i++) {
       int min = i;
 
@@ -40,6 +40,8 @@ public class ConcurrentSort {
         list.set(i, swap);
       }
     }
+
+    return list;
   }
 
   public static <T extends Comparable<? super T>> List<T> quickSort(List<T> list) {
@@ -126,26 +128,51 @@ public class ConcurrentSort {
         ThreadLocalRandom.current().ints().limit(100000).toArray()).boxed().collect(Collectors.toList());
 
     ExecutorService executorService = Executors.newFixedThreadPool(4);
+    final CyclicBarrier cyclicBarrier = new CyclicBarrier(4);
 
     executorService.submit(() -> {
+      try {
+        cyclicBarrier.await();
+      } catch (InterruptedException | BrokenBarrierException e) {
+        e.printStackTrace();
+      }
+
       long startTime = System.currentTimeMillis();
-      insertSort(randomList);
+      insertionSort(randomList);
       System.out.println("insertion sort took: " + (System.currentTimeMillis() - startTime) + "ms");
     });
 
     executorService.submit(() -> {
+      try {
+        cyclicBarrier.await();
+      } catch (InterruptedException | BrokenBarrierException e) {
+        e.printStackTrace();
+      }
+
       long startTime = System.currentTimeMillis();
       selectionSort(randomList);
       System.out.println("selection sort took: " + (System.currentTimeMillis() - startTime) + "ms");
     });
 
     executorService.submit(() -> {
+      try {
+        cyclicBarrier.await();
+      } catch (InterruptedException | BrokenBarrierException e) {
+        e.printStackTrace();
+      }
+
       long startTime = System.currentTimeMillis();
       quickSort(randomList);
       System.out.println("quick sort took: " + (System.currentTimeMillis() - startTime) + "ms");
     });
 
     executorService.submit(() -> {
+      try {
+        cyclicBarrier.await();
+      } catch (InterruptedException | BrokenBarrierException e) {
+        e.printStackTrace();
+      }
+
       long startTime = System.currentTimeMillis();
       mergeSort(randomList);
       System.out.println("merge sort took: " + (System.currentTimeMillis() - startTime) + "ms");
