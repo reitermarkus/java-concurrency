@@ -48,7 +48,6 @@ public class ConcurrentSort {
     if (!list.isEmpty()) {
       T pivot = list.get(0);
 
-
       List<T> less = new LinkedList<T>();
       List<T> pivotList = new LinkedList<T>();
       List<T> more = new LinkedList<T>();
@@ -82,39 +81,38 @@ public class ConcurrentSort {
 
     right = mergeSort(right);
     left = mergeSort(left);
-    List<T> result = merge(left, right);
 
-    return result;
+    return merge(left, right);
   }
 
   public static <T extends Comparable<? super T>> List<T> merge(List<T> left, List<T> right) {
     List<T> result = new ArrayList<T>();
-    Iterator<T> it1 = left.iterator();
-    Iterator<T> it2 = right.iterator();
+    Iterator<T> itLeft = left.iterator();
+    Iterator<T> itRight = right.iterator();
 
-    T x = it1.next();
-    T y = it2.next();
+    T x = itLeft.next();
+    T y = itRight.next();
 
     while (true) {
       if (x.compareTo(y) <= 0) {
         result.add(x);
-        if (it1.hasNext()) {
-          x = it1.next();
+        if (itLeft.hasNext()) {
+          x = itLeft.next();
         } else {
           result.add(y);
-          while (it2.hasNext()) {
-            result.add(it2.next());
+          while (itRight.hasNext()) {
+            result.add(itRight.next());
           }
           break;
         }
       } else {
         result.add(y);
-        if (it2.hasNext()) {
-          y = it2.next();
+        if (itRight.hasNext()) {
+          y = itRight.next();
         } else {
           result.add(x);
-          while (it1.hasNext()) {
-            result.add(it1.next());
+          while (itLeft.hasNext()) {
+            result.add(itLeft.next());
           }
           break;
         }
@@ -123,12 +121,29 @@ public class ConcurrentSort {
     return result;
   }
 
+  public static <T extends Comparable<? super T>> List<T> bubbleSort(List<T> list) {
+    boolean changed;
+    do {
+      changed = false;
+      for (int a = 0; a < list.size() - 1; a++) {
+        if (list.get(a).compareTo(list.get(a + 1)) > 0) {
+          T swap = list.get(a);
+          list.set(a, list.get(a + 1));
+          list.set(a + 1, swap);
+          changed = true;
+        }
+      }
+    } while (changed);
+
+    return list;
+  }
+
   public static void main(String[] args) {
     final List<Integer> randomList = Arrays.stream(
         ThreadLocalRandom.current().ints().limit(100000).toArray()).boxed().collect(Collectors.toList());
 
-    ExecutorService executorService = Executors.newFixedThreadPool(4);
-    final CyclicBarrier cyclicBarrier = new CyclicBarrier(4);
+    ExecutorService executorService = Executors.newFixedThreadPool(5);
+    final CyclicBarrier cyclicBarrier = new CyclicBarrier(5);
 
     executorService.submit(() -> {
       try {
@@ -176,6 +191,18 @@ public class ConcurrentSort {
       long startTime = System.currentTimeMillis();
       mergeSort(randomList);
       System.out.println("merge sort took: " + (System.currentTimeMillis() - startTime) + "ms");
+    });
+
+    executorService.submit(() -> {
+      try {
+        cyclicBarrier.await();
+      } catch (InterruptedException | BrokenBarrierException e) {
+        e.printStackTrace();
+      }
+
+      long startTime = System.currentTimeMillis();
+      bubbleSort(randomList);
+      System.out.println("bubble sort took: " + (System.currentTimeMillis() - startTime) + "ms");
     });
 
     executorService.shutdown();
