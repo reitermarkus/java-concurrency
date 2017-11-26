@@ -44,13 +44,30 @@ public class ConcurrentSort {
     return list;
   }
 
+  public static <T extends Comparable<? super T>> List<T> bubbleSort(List<T> list) {
+    boolean changed;
+    do {
+      changed = false;
+      for (int a = 0; a < list.size() - 1; a++) {
+        if (list.get(a).compareTo(list.get(a + 1)) > 0) {
+          T swap = list.get(a);
+          list.set(a, list.get(a + 1));
+          list.set(a + 1, swap);
+          changed = true;
+        }
+      }
+    } while (changed);
+
+    return list;
+  }
+
   public static <T extends Comparable<? super T>> List<T> quickSort(List<T> list) {
     if (!list.isEmpty()) {
       T pivot = list.get(0);
 
-      List<T> less = new LinkedList<T>();
-      List<T> pivotList = new LinkedList<T>();
-      List<T> more = new LinkedList<T>();
+      List<T> less = new LinkedList<>();
+      List<T> pivotList = new LinkedList<>();
+      List<T> more = new LinkedList<>();
 
       for (T i : list) {
         if (i.compareTo(pivot) < 0)
@@ -68,6 +85,7 @@ public class ConcurrentSort {
       less.addAll(more);
       return less;
     }
+
     return list;
   }
 
@@ -86,7 +104,7 @@ public class ConcurrentSort {
   }
 
   public static <T extends Comparable<? super T>> List<T> merge(List<T> left, List<T> right) {
-    List<T> result = new ArrayList<T>();
+    List<T> result = new ArrayList<>();
     Iterator<T> itLeft = left.iterator();
     Iterator<T> itRight = right.iterator();
 
@@ -103,6 +121,7 @@ public class ConcurrentSort {
           while (itRight.hasNext()) {
             result.add(itRight.next());
           }
+
           break;
         }
       } else {
@@ -114,28 +133,13 @@ public class ConcurrentSort {
           while (itLeft.hasNext()) {
             result.add(itLeft.next());
           }
+
           break;
         }
       }
     }
+
     return result;
-  }
-
-  public static <T extends Comparable<? super T>> List<T> bubbleSort(List<T> list) {
-    boolean changed;
-    do {
-      changed = false;
-      for (int a = 0; a < list.size() - 1; a++) {
-        if (list.get(a).compareTo(list.get(a + 1)) > 0) {
-          T swap = list.get(a);
-          list.set(a, list.get(a + 1));
-          list.set(a + 1, swap);
-          changed = true;
-        }
-      }
-    } while (changed);
-
-    return list;
   }
 
   public static void main(String[] args) {
@@ -145,12 +149,16 @@ public class ConcurrentSort {
     ExecutorService executorService = Executors.newFixedThreadPool(5);
     final CyclicBarrier cyclicBarrier = new CyclicBarrier(5);
 
-    executorService.submit(() -> {
+    Runnable setCyclicBarrier = () -> {
       try {
         cyclicBarrier.await();
       } catch (InterruptedException | BrokenBarrierException e) {
         e.printStackTrace();
       }
+    };
+
+    executorService.submit(() -> {
+      setCyclicBarrier.run();
 
       long startTime = System.currentTimeMillis();
       insertionSort(randomList);
@@ -158,11 +166,7 @@ public class ConcurrentSort {
     });
 
     executorService.submit(() -> {
-      try {
-        cyclicBarrier.await();
-      } catch (InterruptedException | BrokenBarrierException e) {
-        e.printStackTrace();
-      }
+      setCyclicBarrier.run();
 
       long startTime = System.currentTimeMillis();
       selectionSort(randomList);
@@ -170,11 +174,7 @@ public class ConcurrentSort {
     });
 
     executorService.submit(() -> {
-      try {
-        cyclicBarrier.await();
-      } catch (InterruptedException | BrokenBarrierException e) {
-        e.printStackTrace();
-      }
+      setCyclicBarrier.run();
 
       long startTime = System.currentTimeMillis();
       quickSort(randomList);
@@ -182,11 +182,7 @@ public class ConcurrentSort {
     });
 
     executorService.submit(() -> {
-      try {
-        cyclicBarrier.await();
-      } catch (InterruptedException | BrokenBarrierException e) {
-        e.printStackTrace();
-      }
+      setCyclicBarrier.run();
 
       long startTime = System.currentTimeMillis();
       mergeSort(randomList);
@@ -194,11 +190,7 @@ public class ConcurrentSort {
     });
 
     executorService.submit(() -> {
-      try {
-        cyclicBarrier.await();
-      } catch (InterruptedException | BrokenBarrierException e) {
-        e.printStackTrace();
-      }
+      setCyclicBarrier.run();
 
       long startTime = System.currentTimeMillis();
       bubbleSort(randomList);
