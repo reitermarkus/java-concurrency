@@ -1,0 +1,33 @@
+% !TEX TS-program = xelatex
+%
+\documentclass{article}
+\usepackage[T1]{fontenc}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{upgreek}
+\usepackage{enumerate}
+
+\begin{document}
+	\title{Exercise Sheet 5 - Documentation}
+	\date{}
+	\author{Dötlinger Lukas, Kaltschmid Michael, Reiter Markus}
+
+	\maketitle
+
+  \section{Thread Safety}
+  
+  \section{Sharing Objects}
+  
+    \subsection{Publication and Escape}
+    
+    This example shows how the \texttt{this} can escape during construction and how to avoid this.\\
+    The class \texttt{ThisEscape.java} lets the this escape during construction since it registers on construction a \texttt{EventListener}, where the \texttt{onEvent()} method is overwritten by the \texttt{doSomething()} method of the \texttt{ThisEscape} object, in the \texttt{EventSource} Thread, which enables the thread to call methods on the \texttt{ThisEscape} object (the "this" that escaped), although it is not fully constructed. This is problematic because thread behaviour is not fixed!\\
+    The \texttt{EventSource} is a thread that always waits for new listeners and immediately calls their \texttt{onEvent()} method, which executes the \texttt{doSomething()} method of the underlying \texttt{ThisEscape} object, since it was overwritten on construction.\\ 
+    If the \texttt{ThisEscape.java} is executed, it will print out the times when a race condition occours, which is always, since the \texttt{num} variable of the \texttt{ThisEscape} object is accessed by the \texttt{EventSource} thread before it is initialized in the constructor.\\
+    \\
+    The \texttt{SafeListener.java} avoids race conditions, since new instances of the class are created by a static method that adds them to the \texttt{EventSource} thread after the constructor is called. Therefore the object is correctly constructed before it is used. So this does not escape!\\
+
+  
+\end{document}
