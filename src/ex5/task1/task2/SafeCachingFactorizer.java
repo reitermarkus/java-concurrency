@@ -22,40 +22,60 @@ public class SafeCachingFactorizer {
   }
 
   public static void main(String[] args) {
-    ExecutorService executorService = Executors.newFixedThreadPool(5);
     final int limit = 15;
+    final CyclicBarrier cyclicBarrier = new CyclicBarrier(4);
 
-    executorService.submit(() -> {
+    Runnable setCyclicBarrier = () -> {
+      try {
+        cyclicBarrier.await();
+      } catch (InterruptedException | BrokenBarrierException e) {
+        e.printStackTrace();
+      }
+    };
+
+    new Thread(() -> {
+      for (int i = 0; i < limit; i++) {
+        BigInteger[] factors = Arrays.stream(ThreadLocalRandom.current().ints().limit(limit).toArray())
+            .mapToObj(b -> BigInteger.valueOf(b % limit)).toArray(BigInteger[]::new);
+
+        SafeCachingFactorizer.getImmutableCache(factors, factors[0]);
+      }
+
+      setCyclicBarrier.run();
+    }).start();
+
+    new Thread(() -> {
+      for (int i = 0; i < limit; i++) {
+        BigInteger[] factors = Arrays.stream(ThreadLocalRandom.current().ints().limit(limit).toArray())
+            .mapToObj(b -> BigInteger.valueOf(b % limit)).toArray(BigInteger[]::new);
+
+        SafeCachingFactorizer.getImmutableCache(factors, factors[0]);
+      }
+
+      setCyclicBarrier.run();
+    }).start();
+
+    new Thread(() -> {
+      for (int i = 0; i < limit; i++) {
+        BigInteger[] factors = Arrays.stream(ThreadLocalRandom.current().ints().limit(limit).toArray())
+            .mapToObj(b -> BigInteger.valueOf(b % limit)).toArray(BigInteger[]::new);
+
+        SafeCachingFactorizer.getImmutableCache(factors, factors[0]);
+      }
+
+      setCyclicBarrier.run();
+    }).start();
+
+    new Thread(() -> {
       for (int i = 0; i < limit; i++) {
         BigInteger[] factors = Arrays.stream(ThreadLocalRandom.current().ints().limit(limit).toArray())
             .mapToObj(b -> BigInteger.valueOf(b % ThreadLocalRandom.current().nextInt() % limit)).toArray(BigInteger[]::new);
-        SafeCachingFactorizer.getImmutableCache(factors, factors[0]);
-      }
-    });
 
-    executorService.submit(() -> {
-      for (int i = 0; i < limit; i++) {
-        BigInteger[] factors = Arrays.stream(ThreadLocalRandom.current().ints().limit(limit).toArray())
-            .mapToObj(b -> BigInteger.valueOf(b % ThreadLocalRandom.current().nextInt() % limit)).toArray(BigInteger[]::new);
         SafeCachingFactorizer.getImmutableCache(factors, factors[0]);
       }
-    });
 
-    executorService.submit(() -> {
-      for (int i = 0; i < limit; i++) {
-        BigInteger[] factors = Arrays.stream(ThreadLocalRandom.current().ints().limit(limit).toArray())
-            .mapToObj(b -> BigInteger.valueOf(b % ThreadLocalRandom.current().nextInt() % limit)).toArray(BigInteger[]::new);
-        SafeCachingFactorizer.getImmutableCache(factors, factors[0]);
-      }
-    });
-
-    executorService.submit(() -> {
-      for (int i = 0; i < limit; i++) {
-        BigInteger[] factors = Arrays.stream(ThreadLocalRandom.current().ints().limit(limit).toArray())
-            .mapToObj(b -> BigInteger.valueOf(b % ThreadLocalRandom.current().nextInt() % limit)).toArray(BigInteger[]::new);
-        SafeCachingFactorizer.getImmutableCache(factors, factors[0]);
-      }
-    });
+      setCyclicBarrier.run();
+    }).start();
 
 
     executorService.shutdown();

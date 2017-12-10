@@ -46,4 +46,13 @@
     \\
     The \texttt{SafeListener.java} avoids race conditions, since new instances of the class are created by a static method that adds them to the \texttt{EventSource} thread after the constructor is called. Therefore the object is correctly constructed before it is used. So this does not escape!
 
+    \subsection{Thread confinement}
+
+    The task was to make the \texttt{UnsafeChachingFactorizer} \texttt{ThreadSafe} by modifying the code that was shown on the screenshot in the exercise sheet. \\
+    Unfortunately I was not able to mimic the code completely as I could not get the \texttt{Servlet} to run. I did however solve the task according to the idea of using a immutable holder for the caching logic. \\
+    The solution consist out of two classes \texttt{ImmutableCache}, which represents the immutable holder class for the number and its factors and \texttt{SafeCachingFactorizer}, the logic which determines whether a cache has to be renewed or can be reused. \\
+    In order to guarantee Thread safety \texttt{ImmutableCache} and its members are declared as \texttt{final}. \\
+    Four Threads access the \texttt{UnsafeChachingFactorizer} class at the same time with randomly filled \texttt{BigInteger} arrays. The first number of each array will be compared with the previous number and determines whether the cache has to be renewed or not.
+
+
 \end{document}
