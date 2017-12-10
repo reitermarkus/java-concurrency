@@ -9,25 +9,41 @@
 \usepackage{upgreek}
 \usepackage{enumerate}
 
-\begin{document}
-	\title{Exercise Sheet 5 - Documentation}
-	\date{}
-	\author{Dötlinger Lukas, Kaltschmid Michael, Reiter Markus}
+\usepackage{ragged2e}
 
-	\maketitle
+\title{Exercise Sheet 5 - Documentation}
+\date{}
+\author{Dötlinger Lukas, Kaltschmid Michael, Reiter Markus}
+
+\begin{document}
+  \RaggedRight
+
+  \maketitle
 
   \section{Thread Safety}
-  
-  \section{Sharing Objects}
-  
-    \subsection{Publication and Escape}
-    
-    This example shows how the \texttt{this} can escape during construction and how to avoid this.\\
-    The class \texttt{ThisEscape.java} lets the this escape during construction since it registers on construction a \texttt{EventListener}, where the \texttt{onEvent()} method is overwritten by the \texttt{doSomething()} method of the \texttt{ThisEscape} object, in the \texttt{EventSource} Thread, which enables the thread to call methods on the \texttt{ThisEscape} object (the "this" that escaped), although it is not fully constructed. This is problematic because thread behaviour is not fixed!\\
-    The \texttt{EventSource} is a thread that always waits for new listeners and immediately calls their \texttt{onEvent()} method, which executes the \texttt{doSomething()} method of the underlying \texttt{ThisEscape} object, since it was overwritten on construction.\\ 
-    If the \texttt{ThisEscape.java} is executed, it will print out the times when a race condition occours, which is always, since the \texttt{num} variable of the \texttt{ThisEscape} object is accessed by the \texttt{EventSource} thread before it is initialized in the constructor.\\
-    \\
-    The \texttt{SafeListener.java} avoids race conditions, since new instances of the class are created by a static method that adds them to the \texttt{EventSource} thread after the constructor is called. Therefore the object is correctly constructed before it is used. So this does not escape!\\
 
-  
+    \subsection{Lazy Initialization}
+
+    For the first task, we have an \texttt{ExpensiveObject} class. The constructor of this class is made expensive using a \texttt{static AtomicInteger}. The constructor calls \texttt{incrementAndGet()} on this \texttt{AtomicInteger}, and sleeps for as many seconds as the value was before incrementing it.
+    \\
+    In the class \texttt{LazyInitRaceCondition}, we have a \texttt{private ExpensiveObject instance} and a \texttt{getInstance()} method, in which we simply check for \texttt{instance == null}, and if it is, we instantiate a new \texttt{ExpensiveObject} instance, set it, and return it. This leads to a race condition, because the \texttt{getInstance()} method is not synchronized, so it is possible that \texttt{instance} is read as \texttt{null} by two threads simultaneously, and each of them sets the \texttt{instance} variable to a separate instance of \texttt{ExpensiveObject}.
+    \\
+    We solve this problem in the \texttt{AtomicLazyInit} class, which has a \texttt{private AtomicReference<ExpensiveObject> instance} as well as a \texttt{getInstance()} method. In the \texttt{getInstance()} method we first call \texttt{instance.get()}, and if it is \texttt{null}, we create a new \texttt{ExpensiveObject} \texttt{newObject} and call \\ \texttt{instance.compareAndSet(null, newObject)}. If this returns \texttt{true}, \texttt{newObject} is now set as the \texttt{instance}, otherwise the \texttt{instance} was set by another thread, in which case we return \texttt{instance.get()}, which cannot be \texttt{null} at this point.
+
+    \subsection{Servlet that attempts to cache its last result}
+
+  \section{Sharing Objects}
+
+    \subsection{Publication and Escape}
+
+    This example shows how the \texttt{this} can escape during construction and how to avoid this.
+    \\
+    The class \texttt{ThisEscape.java} lets the this escape during construction since it registers on construction a \texttt{EventListener}, where the \texttt{onEvent()} method is overwritten by the \texttt{doSomething()} method of the \texttt{ThisEscape} object, in the \texttt{EventSource} Thread, which enables the thread to call methods on the \texttt{ThisEscape} object (the "this" that escaped), although it is not fully constructed. This is problematic because thread behaviour is not fixed!
+    \\
+    The \texttt{EventSource} is a thread that always waits for new listeners and immediately calls their \texttt{onEvent()} method, which executes the \texttt{doSomething()} method of the underlying \texttt{ThisEscape} object, since it was overwritten on construction.
+    \\
+    If the \texttt{ThisEscape.java} is executed, it will print out the times when a race condition occours, which is always, since the \texttt{num} variable of the \texttt{ThisEscape} object is accessed by the \texttt{EventSource} thread before it is initialized in the constructor.
+    \\
+    The \texttt{SafeListener.java} avoids race conditions, since new instances of the class are created by a static method that adds them to the \texttt{EventSource} thread after the constructor is called. Therefore the object is correctly constructed before it is used. So this does not escape!
+
 \end{document}
