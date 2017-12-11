@@ -1,4 +1,4 @@
-package ex5.task1.task2;
+package ex5.task2.part2;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -76,8 +76,5 @@ public class SafeCachingFactorizer {
 
       setCyclicBarrier.run();
     }).start();
-
-
-    executorService.shutdown();
   }
 }

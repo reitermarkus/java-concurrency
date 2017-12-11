@@ -1,4 +1,4 @@
-package ex5.task2;
+package ex5.task2.part1;
 
 /**
  * Created by Lukas Dötlinger.
