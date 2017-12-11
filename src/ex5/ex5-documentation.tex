@@ -31,6 +31,7 @@
     We solve this problem in the \texttt{AtomicLazyInit} class, which has a \texttt{private AtomicReference<ExpensiveObject> instance} as well as a \texttt{getInstance()} method. In the \texttt{getInstance()} method we first call \texttt{instance.get()}, and if it is \texttt{null}, we create a new \texttt{ExpensiveObject} \texttt{newObject} and call \\ \texttt{instance.compareAndSet(null, newObject)}. If this returns \texttt{true}, \texttt{newObject} is now set as the \texttt{instance}, otherwise the \texttt{instance} was set by another thread, in which case we return \texttt{instance.get()}, which cannot be \texttt{null} at this point.
 
     \subsection{Servlet that attempts to cache its last result}
+    As you can see in exercise 2.2 the problem can be solved by using a immutable holder.
 
   \section{Sharing Objects}
 
