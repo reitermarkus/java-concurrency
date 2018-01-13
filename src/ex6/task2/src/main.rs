@@ -46,14 +46,15 @@ fn main() {
   let args: Vec<String> = env::args().collect();
 
   if args.len() > 1 {
-    println!("{}", &args[1]);
     let path = Path::new(&args[1]);
     let sequential_bench = Instant::now();
+    println!("Running sequential operation for folder \"{}\"", &args[1]);
     println!("Total size of folder (sequential) {:.2} mb", get_size_of_files_in_dir_sequential(&path) / 1_048_576 as f64);
     let sequential_bench_elapsed = sequential_bench.elapsed();
     println!("sequential operation took {} ms", into_ms(sequential_bench_elapsed));
 
     let parallel_bench = Instant::now();
+    println!("Running parallel operation for folder \"{}\"", &args[1]);
     println!("Total size of folder (parallel) {:.2} mb", get_size_of_files_in_dir_parallel(&path) / 1_048_576 as f64);
     let parallel_bench_elapsed = parallel_bench.elapsed();
     println!("parallel operation took {} ms", into_ms(parallel_bench_elapsed));
