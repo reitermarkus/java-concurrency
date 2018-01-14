@@ -1,0 +1,7 @@
+[package]
+name = "number_range"
+version = "0.1.0"
+authors = ["Markus Reiter <me@reitermark.us>"]
+
+[dependencies]
+crossbeam = "0.3.2"
