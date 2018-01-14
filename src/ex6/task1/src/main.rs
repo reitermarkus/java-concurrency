@@ -2,26 +2,43 @@ mod number_range;
 
 use number_range::NumberRange;
 
+use rand::Rng;
+use std::sync::{Arc};
+
 extern crate crossbeam;
+extern crate rand;
 
 fn main() {
-  let lower = 10;
-  let upper = 20;
+  let range = Arc::new(NumberRange::new(0, 0));
 
-  let range = NumberRange::new(lower, upper);
+  let thread_count = 4;
 
-  println!("Is 11 in Range? {}", range.is_in_range(11));
+  crossbeam::scope(|scope| {
+    let threads: Vec<_> = (0..thread_count).into_iter().map(|_| {
+      scope.spawn(|| {
+        let mut rng = rand::thread_rng();
 
-  range.set_lower(13);
+        loop {
+          let lower: i64 = rng.gen();
+          let upper: i64 = rng.gen();
 
-  println!("Is 11 still in Range? {}", range.is_in_range(11));
+          range.set_lower(lower);
+          range.set_upper(upper);
+        }
+      })
+    }).collect();
 
-  range.set_lower(10);
+    let printer_thread = scope.spawn(|| {
+      let mut rng = rand::thread_rng();
 
-  println!("Is 11 in Range again? {}", range.is_in_range(11));
+      loop {
+        let num: i64 = rng.gen();
 
-  range.set_upper(10);
+        println!("Is {} in range? {}", &num, &range.is_in_range(num));
+      }
+    });
 
-  println!("Is 11 still in Range? {}", range.is_in_range(11));
-
+    threads.into_iter().for_each(|t| t.join());
+    printer_thread.join();
+  });
 }

@@ -37,3 +37,6 @@ impl NumberRange {
     return v >= **self.lower.load(Acquire, &guard).unwrap() && v <= **self.upper.load(Acquire, &guard).unwrap()
   }
 }
+
+unsafe impl Sync for NumberRange {}
+unsafe impl Send for NumberRange {}
