@@ -22,6 +22,9 @@
   \maketitle
 
   \section{Composing Objects}
+    The task in this excercise was to protect the $lower < upper$ invariant. The given class used \texttt{AtomicInteger} for these two values. This is not sufficient, however, since you need to synchronize on both values to also keep the invariant intact. We need to synchronize both because it is possible for two threads to break the invariant. For example, if one thread reads \texttt{upper}, then another thread writes \texttt{upper}, but the first thread only now sets the new value of \texttt{lower} based on the now outdated value of \texttt{upper}. Simply using an \texttt{AtomicInteger} is therefore not enough.
+
+    To implement the generation of random ranges, we used the \texttt{ThreadLocalRandom} class with its \texttt{nextInt} method. We create 4 threads, each of which loops forever. In this loop, a random \texttt{lower} and \texttt{upper} are generated, and then set using the appropriate methods of the \texttt{NumberRange} class. Since with random numbers there is a high likelyhood that $lower < upper$ does not hold, we simply catch the \texttt{IllegalArgumentException} and retry in each iteration. Then there is another thread which generates a random number and tests if it is in the random range using the \texttt{isInRange} method.
 
   \section{Scalability}
     The task was to measure execution time of the provided program with different directories and furthermore write a concurrent version of the program.
