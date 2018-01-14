@@ -1,0 +1,65 @@
+% !TEX TS-program = xelatex
+%
+\documentclass{article}
+\usepackage[T1]{fontenc}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{upgreek}
+\usepackage{enumerate}
+\usepackage[binary-units=true]{siunitx}
+\usepackage{setspace}% http://ctan.org/pkg/setspace
+\usepackage{ragged2e}
+
+\title{Exercise Sheet 6 - Documentation}
+\date{}
+\author{Dötlinger Lukas, Kaltschmid Michael, Reiter Markus}
+
+\begin{document}
+  \RaggedRight
+
+  \maketitle
+
+  \section{Composing Objects}
+
+  \section{Scalability}
+    The task was to measure execution time of the provided program with different directories and furthermore write a concurrent version of the program.
+    \\[3pt]
+    Benchmarking turns out be rather difficult because there are many variables to consider. For example on any first run of the program you are likely to be IO bound rather then CPU bound which more or less negates the benefit of parallelism. The type of storage used is therefore a huge factor. HDDs skew the results more than SSDs in this regard.
+    \\[3pt]
+    So in order to get somewhat accurate results we decided to run the the sequantial and parallel version of the program twice to ensure traverses beeing in cached and therefore only focus on CPU results.
+    \\[3pt]
+    The results were mixed. We could measure speedups of up to 4 when running in parallel with 12 threads. The average speedups was a lot slower though. The reason for this is lies in the implementation and data to traverse. The approach for the parallel programm was to partition all folders of the root in equally sized arrays of paths and subsequently compute the size of every file recursively in those arrays on every thread.
+    \\[3pt]
+    One can already guess that this approach has its flaws because depending on the folder structure some threads have more work than others. So in a perfect world where all root folders have the same folder structure with the same files a speedup of n where n is the amount of logical cores, could be possible.
+    \\[24pt]
+    sequantial:
+    \begin{doublespacing}
+      \begin{align*}
+        \begin{tabular}{|*{3}{c|}}
+          \hline
+          $folder$ & $size$ & $time$ \\
+          \hline
+          Program Files (x86) & $\SI{642882.17}{\mega\byte}$ & $\SI{15740}{\milli\second}$ \\
+          \hline
+          Pictures & $\SI{982.78}{\mega\byte}$ & $\SI{23}{\milli\second}$ \\
+          \hline
+        \end{tabular}
+      \end{align*}
+    \end{doublespacing}
+    parallel:
+    \begin{doublespacing}
+      \begin{align*}
+        \begin{tabular}{|*{3}{c|}}
+          \hline
+          $folder$ & $size$ & $time$ \\
+          \hline
+          Program Files (x86) & $\SI{642882.17}{\mega\byte}$ & $\SI{5747}{\milli\second}$ \\
+          \hline
+          Program Files (x86) & $\SI{982.78}{\mega\byte}$ & $\SI{5}{\milli\second}$ \\
+          \hline
+        \end{tabular}
+      \end{align*}
+    \end{doublespacing}
+\end{document}
