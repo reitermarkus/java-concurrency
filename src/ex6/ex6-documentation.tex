@@ -34,10 +34,11 @@
     \\[3pt]
     One can already guess that this approach has its flaws because depending on the folder structure some threads have more work than others. So in a perfect world where all root folders have the same folder structure with the same files a speedup of n where n is the amount of logical cores, could be possible.
     \\[24pt]
-    sequantial:
     \begin{doublespacing}
       \begin{align*}
         \begin{tabular}{|*{3}{c|}}
+          \hline
+          \multicolumn{1}{|c}{\bfseries Sequential:} & \multicolumn{1}{c}{} & \multicolumn{1}{c|}{} \\
           \hline
           $folder$ & $size$ & $time$ \\
           \hline
@@ -48,16 +49,17 @@
         \end{tabular}
       \end{align*}
     \end{doublespacing}
-    parallel:
     \begin{doublespacing}
       \begin{align*}
         \begin{tabular}{|*{3}{c|}}
+          \hline
+          \multicolumn{1}{|c}{\bfseries Parallel:} & \multicolumn{1}{c}{} & \multicolumn{1}{c|}{} \\
           \hline
           $folder$ & $size$ & $time$ \\
           \hline
           Program Files (x86) & $\SI{642882.17}{\mega\byte}$ & $\SI{5747}{\milli\second}$ \\
           \hline
-          Program Files (x86) & $\SI{982.78}{\mega\byte}$ & $\SI{5}{\milli\second}$ \\
+          Pictures & $\SI{982.78}{\mega\byte}$ & $\SI{5}{\milli\second}$ \\
           \hline
         \end{tabular}
       \end{align*}
