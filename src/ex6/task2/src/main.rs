@@ -16,7 +16,7 @@ fn get_size_of_files_in_dir_sequential(path: &Path) -> f64 {
   match read_dir(path) {
     Ok(entries) => entries.fold(0.0, |sum, entry|
       sum + get_size_of_files_in_dir_sequential(&entry.unwrap().path())),
-    Err(e) => panic!("Could not read directory \"{}\" with error: {}", path.display(), e),
+    Err(_) => 0.0 //skip read only folders or else panic!("Could not read directory \"{}\" with error: {}", path.display(), e),
   }
 }
 
@@ -26,10 +26,12 @@ fn get_size_of_files_in_dir_parallel(path: &Path) -> f64 {
     let num_tasks_per_thread = paths.len() / num_cpus::get();
 
     return crossbeam::scope(|scope| {
-      let threads: Vec<_> = paths
-        .chunks(num_tasks_per_thread).map(|chunk| scope.spawn(move ||
-          chunk.iter().fold(0.0, |sum, val| sum + get_size_of_files_in_dir_sequential(&val))
-      )).collect();
+      let threads: Vec<_> = if num_tasks_per_thread > 0 {
+        paths.chunks(num_tasks_per_thread).map(|chunk| scope.spawn(move ||
+            chunk.iter().fold(0.0, |sum, val| sum + get_size_of_files_in_dir_sequential(&val)))).collect()
+      } else {
+        paths.iter().map(|p| scope.spawn(move || get_size_of_files_in_dir_sequential(&p))).collect()
+      };
 
       return threads.into_iter().map(|t| t.join()).sum()
     });
