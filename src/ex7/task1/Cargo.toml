@@ -1,0 +1,9 @@
+[package]
+name = "concurrent_file_size"
+version = "0.1.0"
+authors = ["Michael Kaltschmid <kaltschmidmichael@gmail.com>"]
+
+[dependencies]
+crossbeam = "0.3.2"
+num_cpus = "1.8.0"
+rayon = "0.9.0"
