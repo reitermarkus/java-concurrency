@@ -27,8 +27,8 @@ fn word_occurrences(re: &Regex, path: &Path) -> usize {
 }
 
 
-fn word_occurrences_in_dir(word: &Regex, path: &Path, n_threads : usize) -> usize {
-  rayon::initialize(rayon::Configuration::new().num_threads(n_threads)).unwrap();
+fn word_occurrences_in_dir(word: &Regex, path: &Path, thread_count : usize) -> usize {
+  rayon::initialize(rayon::Configuration::new().num_threads(thread_count)).unwrap();
 
   fn join_rec(word: &Regex, paths: &[PathBuf]) -> usize {
     paths.iter().fold(0, |sum, path| {
@@ -71,6 +71,11 @@ fn main() {
     None => panic!("No word given!")
   };
 
+  let threads = match args.next() {
+    Some(threads) => threads.parse::<usize>().unwrap(),
+    None => num_cpus::get()
+  };
+
   println!("Searching for occurrences of '{}' inside '{}' …", word, dir);
 
   let re = RegexBuilder::new(&word)
@@ -79,7 +84,7 @@ fn main() {
              .build()
              .unwrap();
 
-  let word_count = word_occurrences_in_dir(&re, &Path::new(&dir), 1);
+  let word_count = word_occurrences_in_dir(&re, &Path::new(&dir), threads);
 
   println!("{}", word_count);
 }
