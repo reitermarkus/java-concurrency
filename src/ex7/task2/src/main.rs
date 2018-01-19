@@ -26,7 +26,6 @@ fn word_occurrences(re: &Regex, path: &Path) -> usize {
   re.find_iter(&content).count()
 }
 
-
 fn word_occurrences_in_dir(word: &Regex, path: &Path, thread_count : usize) -> usize {
   rayon::initialize(rayon::Configuration::new().num_threads(thread_count)).unwrap();
 
