@@ -9,7 +9,7 @@ extern crate num_cpus;
 extern crate rayon;
 extern crate regex;
 
-use regex::{Regex, RegexBuilder};
+use regex::{escape, Regex, RegexBuilder};
 
 fn word_occurrences(re: &Regex, path: &Path) -> usize {
   let file = match File::open(&path) {
@@ -77,7 +77,7 @@ fn main() {
 
   println!("Searching for occurrences of '{}' inside '{}' …", word, dir);
 
-  let re = RegexBuilder::new(&word)
+  let re = RegexBuilder::new(&escape(&word))
              .multi_line(true)
              .case_insensitive(true)
              .build()
