@@ -21,7 +21,10 @@ fn word_occurrences(re: &Regex, path: &Path) -> usize {
 
   let mut content = String::new();
 
-  buf_reader.read_to_string(&mut content).unwrap();
+  if buf_reader.read_to_string(&mut content).is_err() {
+    // panic!("Failed reading contents of '{}'!", path.to_str().unwrap())
+    return 0
+  }
 
   re.find_iter(&content).count()
 }
