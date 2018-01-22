@@ -95,4 +95,46 @@
         \end{tabular}
       \end{align*}
     \end{doublespacing}
+
+  \section{Exercise 2}
+
+  The goal of this exercise was to create a program which outputs the occurences of a specified word in all text files inside of a given directory. To implement this, we used Rust with the \texttt{rayon} crate, which provides a \texttt{join} method that can be used to implement a fork/join algorithm. Here, we used the same approach to traverse directories as in the first exercise. The \texttt{join\_rec} method checks if the currently matched \texttt{Path} is a file, if it is, the method \texttt{word\_occurrences} is called on it, otherwise it will recurse into the subdirectory.
+
+  The method \texttt{word\_occurrences} takes a \texttt{Regex} and a \texttt{Path} as arguments. It then opens the path as a file and uses \texttt{BufReader::read\_to\_string} to read the contents of the file. The last step is to call \texttt{Regex::find\_iter} on the file contents, which returns a vector of matches, which we simply call \texttt{count()} on, to get the number of occurrences. To show the speedup using fork/join with various number of threads, I ran the program on a directory containing my Git repositories, which is $\SI{529}{\mega\byte}$ in size. I then searched for the word \textit{if}, which occurs quite often inside source code files.
+
+  \begin{doublespacing}
+    \begin{align*}
+      \begin{tabular}{|*{2}{c|}}
+        \hline
+        Threads & Time \\
+        \hline
+        $1$ & $\SI{11.18}{\second}$ \\
+        \hline
+        $2$ & $\SI{1.21}{\second}$ \\
+        \hline
+        $4$ & $\SI{0.99}{\second}$ \\
+        \hline
+        $8$ & $\SI{0.98}{\second}$ \\
+        \hline
+      \end{tabular}
+    \end{align*}
+  \end{doublespacing}
+
+  As you can see, there is significant speedup from a single thread, i.e. sequential execution, and two threads. There is another jump in speed going from two to four threads, after that, the speedup is not noticable anymore, at least not with a directory of this size.
+
+  Therefore, I conducted another test with a directory which is $\SI{6.9}{\giga\byte}$ in size. This shows that there is still noticable speedup between four and eight threads.
+
+  \begin{doublespacing}
+    \begin{align*}
+      \begin{tabular}{|*{2}{c|}}
+        \hline
+        Threads & Time \\
+        \hline
+        $4$ & $\SI{5.50}{\second}$ \\
+        \hline
+        $8$ & $\SI{4.69}{\second}$ \\
+        \hline
+      \end{tabular}
+    \end{align*}
+  \end{doublespacing}
 \end{document}
