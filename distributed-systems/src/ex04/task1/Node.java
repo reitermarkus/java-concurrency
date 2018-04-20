@@ -72,9 +72,9 @@ public class Node implements Runnable {
       throw new RuntimeException(e);
     }
 
-    var exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    var exec = Executors.newWorkStealingPool();
 
-    updateThread().start();
+    updateThread.start();
 
     while (!Thread.interrupted()) {
       try {
@@ -114,7 +114,7 @@ public class Node implements Runnable {
 
     exec.shutdown();
 
-    updateThread().interrupt();
+    updateThread.interrupt();
 
     try {
       socket.close();
@@ -123,54 +123,46 @@ public class Node implements Runnable {
     }
   }
 
-  private Thread updateThread;
+  private Thread updateThread = new Thread(() -> {
+    System.out.println(this.port + ": Update thread starting.");
 
-  private Thread updateThread() {
-    if (this.updateThread == null) {
-      this.updateThread = new Thread(() -> {
-        System.out.println(this.port + ": Update thread starting.");
+    while (!Thread.interrupted()) {
+      this.randomPeer().ifPresent(peer -> {
+        try {
+          System.out.println(this.port + ": Requesting table from '" + peer + "' …");
+          final var connection = new Socket(peer.getAddress(), peer.getPort());
 
-        while (!Thread.interrupted()) {
-          randomPeer().ifPresent(peer -> {
+          try(final var os = new ObjectOutputStream(connection.getOutputStream());
+              final var is = new ObjectInputStream(connection.getInputStream())) {
+
+            os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
+            os.writeObject("getTable");
+
             try {
-              System.out.println(this.port + ": Requesting table from '" + peer + "' …");
-              final var connection = new Socket(peer.getAddress(), peer.getPort());
-
-              try(final var os = new ObjectOutputStream(connection.getOutputStream());
-                  final var is = new ObjectInputStream(connection.getInputStream())) {
-
-                os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
-                os.writeObject("getTable");
-
-                try {
-                  final var peers = (Set<InetSocketAddress>)is.readObject();
-                  System.out.println(this.port + ": Received table: " + peers);
-                  peers.forEach(p -> addPeer(p));
-                } catch (ClassNotFoundException e) {
-                  e.printStackTrace();
-                }
-              } catch (IOException e) {
-                e.printStackTrace();
-              }
-            } catch (IOException e) {
-              // Remove offline peer.
-              this.removePeer(peer);
+              final var peers = (Set<InetSocketAddress>)is.readObject();
+              System.out.println(this.port + ": Received table: " + peers);
+              peers.forEach(this::addPeer);
+            } catch (ClassNotFoundException e) {
+              e.printStackTrace();
             }
-          });
-
-          try {
-            Thread.sleep(5000);
-          } catch (InterruptedException e) {
-            break;
+          } catch (IOException e) {
+            e.printStackTrace();
           }
+        } catch (IOException e) {
+          // Remove offline peer.
+          this.removePeer(peer);
         }
-
-        System.out.println(this.port + ": Update thread stopped.");
       });
+
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        break;
+      }
     }
 
-    return this.updateThread;
-  }
+    System.out.println(this.port + ": Update thread stopped.");
+  });
 
   private Optional<InetSocketAddress> randomPeer() {
     if (peers.isEmpty()) {
