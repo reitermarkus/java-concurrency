@@ -82,10 +82,8 @@ public class Node implements Runnable {
         var connection = this.socket.accept();
 
         exec.submit(() -> {
-          try {
-            final var is = new ObjectInputStream(connection.getInputStream());
-            final var os = new ObjectOutputStream(connection.getOutputStream());
-
+          try(final var is = new ObjectInputStream(connection.getInputStream());
+              final var os = new ObjectOutputStream(connection.getOutputStream())) {
             try {
               final var address = (InetSocketAddress)is.readObject();
               final var command = (String)is.readObject();
@@ -101,9 +99,6 @@ public class Node implements Runnable {
 
             } catch (ClassNotFoundException e) {
               e.printStackTrace();
-            } finally {
-              is.close();
-              os.close();
             }
           } catch (IOException e) {
             e.printStackTrace();
@@ -141,9 +136,8 @@ public class Node implements Runnable {
               System.out.println(this.port + ": Requesting table from '" + peer + "' …");
               final var connection = new Socket(peer.getAddress(), peer.getPort());
 
-              try {
-                final var os = new ObjectOutputStream(connection.getOutputStream());
-                final var is = new ObjectInputStream(connection.getInputStream());
+              try(final var os = new ObjectOutputStream(connection.getOutputStream());
+                  final var is = new ObjectInputStream(connection.getInputStream())) {
 
                 os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
                 os.writeObject("getTable");
@@ -154,9 +148,6 @@ public class Node implements Runnable {
                   peers.forEach(p -> addPeer(p));
                 } catch (ClassNotFoundException e) {
                   e.printStackTrace();
-                } finally {
-                  os.close();
-                  is.close();
                 }
               } catch (IOException e) {
                 e.printStackTrace();
