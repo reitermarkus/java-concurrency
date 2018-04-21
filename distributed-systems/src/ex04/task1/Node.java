@@ -63,9 +63,9 @@ public class Node implements Runnable {
     }
   }
 
-  private boolean parseCommand(final String cmd, final ObjectOutputStream os) throws IOException {
+  private boolean parseCommand(final Command cmd, final ObjectOutputStream os) throws IOException {
     try {
-      switch (Command.valueOf(cmd)) {
+      switch (cmd.getCommandType()) {
         case GET_TABLE:
           synchronized (this.table) {
             os.writeObject(this.table);
@@ -100,7 +100,7 @@ public class Node implements Runnable {
               try {
                 final var name = (String)is.readObject();
                 final var address = (InetSocketAddress)is.readObject();
-                final var command = (String)is.readObject();
+                final var command = (Command)is.readObject();
 
                 synchronized (this.table) {
                   if (this.table.merge(name, address)) {
@@ -165,7 +165,7 @@ public class Node implements Runnable {
         ) {
           os.writeObject(this.name);
           os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
-          os.writeObject("GET_TABLE");
+          os.writeObject(new Command(CommandType.GET_TABLE, this.name));
 
           try {
             final var peers = (Table)is.readObject();
