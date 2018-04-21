@@ -104,8 +104,10 @@ public class Node implements Runnable {
         var connection = this.socket.accept();
 
         exec.submit(() -> {
-          try(final var is = new ObjectInputStream(connection.getInputStream());
-              final var os = new ObjectOutputStream(connection.getOutputStream())) {
+          try (
+            final var is = new ObjectInputStream(connection.getInputStream());
+            final var os = new ObjectOutputStream(connection.getOutputStream());
+          ) {
             try {
               final var address = (Map.Entry<String, InetSocketAddress>)is.readObject();
               final var command = (String)is.readObject();
@@ -148,8 +150,10 @@ public class Node implements Runnable {
           System.out.println(this.name + ": Requesting table from '" + peer.getKey() + "' …");
           final var connection = new Socket(peer.getValue().getAddress(), peer.getValue().getPort());
 
-          try(final var os = new ObjectOutputStream(connection.getOutputStream());
-              final var is = new ObjectInputStream(connection.getInputStream())) {
+          try (
+            final var os = new ObjectOutputStream(connection.getOutputStream());
+            final var is = new ObjectInputStream(connection.getInputStream());
+          ) {
 
             os.writeObject(new AbstractMap.SimpleEntry<>(this.name, new InetSocketAddress(this.getAddress(), this.getPort())));
             os.writeObject("GET_TABLE");
