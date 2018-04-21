@@ -71,7 +71,7 @@ public class Node implements Runnable {
 
   private boolean parseCommand(final String cmd, final ObjectOutputStream os) throws IOException {
     try {
-      switch (Commands.valueOf(cmd)) {
+      switch (Command.valueOf(cmd)) {
         case GET_TABLE:
           synchronized (this.peers) {
             os.writeObject(this.peers);
