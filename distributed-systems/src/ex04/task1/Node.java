@@ -109,10 +109,11 @@ public class Node implements Runnable {
             final var os = new ObjectOutputStream(connection.getOutputStream());
           ) {
             try {
-              final var address = (Map.Entry<String, InetSocketAddress>)is.readObject();
+              final var name = (String)is.readObject();
+              final var address = (InetSocketAddress)is.readObject();
               final var command = (String)is.readObject();
 
-              this.addPeer(address.getKey(), address.getValue());
+              this.addPeer(name, address);
               this.parseCommand(command, os);
 
             } catch (ClassNotFoundException e) {
@@ -155,7 +156,8 @@ public class Node implements Runnable {
             final var is = new ObjectInputStream(connection.getInputStream());
           ) {
 
-            os.writeObject(new AbstractMap.SimpleEntry<>(this.name, new InetSocketAddress(this.getAddress(), this.getPort())));
+            os.writeObject(this.name);
+            os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
             os.writeObject("GET_TABLE");
 
             try {
