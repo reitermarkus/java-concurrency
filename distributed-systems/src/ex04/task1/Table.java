@@ -107,6 +107,10 @@ public class Table implements Serializable {
     return this.table.get(name);
   }
 
+  public Set<Map.Entry<String, InetSocketAddress>> getEntrySet() {
+    return table.entrySet();
+  }
+
   public int size() {
     return this.table.size();
   }
