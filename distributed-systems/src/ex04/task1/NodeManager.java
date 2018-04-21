@@ -20,7 +20,7 @@ public class NodeManager {
 
     Thread.sleep(10000);
 
-    System.out.println("  NM: Shutting down node 2 …");
+    System.out.println("   NM: Shutting down node 2 …");
     node2Thread.interrupt();
   }
 }

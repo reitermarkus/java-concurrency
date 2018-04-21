@@ -166,6 +166,7 @@ public class Node implements Runnable {
           }
         } catch (IOException e) {
           // Remove offline peer.
+          System.out.println(this.name + ": Peer '" + peer.getKey() + "' is unreachable.");
           this.removePeer(peer.getKey());
         }
       });
@@ -177,7 +178,7 @@ public class Node implements Runnable {
       }
     }
 
-    System.out.println(this.port + ": Update thread stopped.");
+    System.out.println(this.name + ": Update thread stopped.");
   });
 
   private Optional<Map.Entry<String, InetSocketAddress>> randomPeer() {
