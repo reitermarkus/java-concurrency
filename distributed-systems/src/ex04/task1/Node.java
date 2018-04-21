@@ -6,8 +6,6 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Node implements Runnable {
-  private volatile boolean running = false;
-
   private Map<String, InetSocketAddress> peers = new HashMap<>();
 
   private InetAddress address;
@@ -103,61 +101,54 @@ public class Node implements Runnable {
   }
 
   public void run() {
-    this.running = true;
-
-    try {
-      this.socket = new ServerSocket(this.port);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
     var exec = Executors.newWorkStealingPool();
 
     updateThread.start();
 
-    while (this.running) {
-      try {
-        System.out.println(this.name + ": Waiting for connection …");
-        var connection = this.socket.accept();
+    try (final var socket = this.socket = new ServerSocket(this.port)) {
+      while (!Thread.interrupted()) {
+        try {
+          System.out.println(this.name + ": Waiting for connection …");
+          var connection = socket.accept();
 
-        exec.submit(() -> {
-          try (
-            final var is = new ObjectInputStream(connection.getInputStream());
-            final var os = new ObjectOutputStream(connection.getOutputStream());
-          ) {
-            try {
-              final var name = (String)is.readObject();
-              final var address = (InetSocketAddress)is.readObject();
-              final var command = (String)is.readObject();
+          exec.submit(() -> {
+            try (
+              final var is = new ObjectInputStream(connection.getInputStream());
+              final var os = new ObjectOutputStream(connection.getOutputStream());
+            ) {
+              try {
+                final var name = (String)is.readObject();
+                final var address = (InetSocketAddress)is.readObject();
+                final var command = (String)is.readObject();
 
-              if (this.addPeer(name, address)) {
-                System.out.println(this.name + ": Added peer '" + name + "'.");
+                if (this.addPeer(name, address)) {
+                  System.out.println(this.name + ": Added peer '" + name + "'.");
+                }
+
+                this.parseCommand(command, os);
+              } catch (ClassNotFoundException e) {
+                e.printStackTrace();
               }
-
-              this.parseCommand(command, os);
-
-            } catch (ClassNotFoundException e) {
+            } catch (IOException e) {
               e.printStackTrace();
             }
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
-        });
-      } catch (SocketException e) {
-        System.out.println("Shutting down ...");
-        break;
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+          });
+        } catch (SocketException e) {
+          break;
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
 
-      Thread.yield();
+        Thread.yield();
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
     try {
-      socket.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+      updateThread.interrupt();
+      updateThread.join();
+    } catch (InterruptedException e) {}
 
     exec.shutdown();
     System.out.println(this.name + ": Going offline …");
@@ -166,7 +157,7 @@ public class Node implements Runnable {
   private Thread updateThread = new Thread(() -> {
     System.out.println(this.name + ": Update thread starting.");
 
-    while (this.running) {
+    while (!Thread.interrupted()) {
       final var optionalPeer = this.randomPeer();
 
       if (optionalPeer.isPresent()) {
@@ -210,7 +201,7 @@ public class Node implements Runnable {
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {
-        continue;
+        break;
       }
     }
 
@@ -227,7 +218,13 @@ public class Node implements Runnable {
   }
 
   public void shutdown() {
-    this.running = false;
+    if (this.socket != null) {
+      try {
+        this.socket.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   @Override
