@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Node implements Runnable {
+  private volatile boolean running = false;
+
   private Map<String, InetSocketAddress> peers = new HashMap<>();
 
   private InetAddress address;
@@ -13,14 +15,29 @@ public class Node implements Runnable {
   private String name;
   private ServerSocket socket;
 
-  public Node(int port) throws UnknownHostException {
-    this(InetAddress.getLocalHost(), port, UUID.randomUUID().toString());
+  private int networkSize;
+
+  public Node(int port, int networkSize) throws UnknownHostException {
+    this(UUID.randomUUID().toString(), port, networkSize);
   }
 
-  public Node(InetAddress address, int port, String name) {
+  public Node(String name, int port, int networkSize) throws UnknownHostException {
+    this(name, InetAddress.getLocalHost(), port, networkSize);
+  }
+
+  public Node(String name, InetAddress address, int port, int networkSize) {
+    this.name = name;
     this.address = address;
     this.port = port;
-    this.name = name;
+    this.networkSize = networkSize;
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  public InetSocketAddress getSocketAddress() {
+    return new InetSocketAddress(this.address, this.port);
   }
 
   public InetAddress getAddress() {
@@ -49,7 +66,6 @@ public class Node implements Runnable {
     synchronized (this.peers) {
       if (!this.peers.containsKey(name)) {
         this.peers.put(name, peerAddress);
-        System.out.println(this.name + ": Added peer: " + peerAddress);
         return true;
       }
 
@@ -61,7 +77,6 @@ public class Node implements Runnable {
     synchronized (this.peers) {
       if (this.peers.containsKey(name)) {
         this.peers.remove(name);
-        System.out.println(this.name + ": Removed peer: " + name);
         return true;
       }
 
@@ -88,6 +103,8 @@ public class Node implements Runnable {
   }
 
   public void run() {
+    this.running = true;
+
     try {
       this.socket = new ServerSocket(this.port);
     } catch (IOException e) {
@@ -98,7 +115,7 @@ public class Node implements Runnable {
 
     updateThread.start();
 
-    while (!Thread.interrupted()) {
+    while (this.running) {
       try {
         System.out.println(this.name + ": Waiting for connection …");
         var connection = this.socket.accept();
@@ -113,7 +130,10 @@ public class Node implements Runnable {
               final var address = (InetSocketAddress)is.readObject();
               final var command = (String)is.readObject();
 
-              this.addPeer(name, address);
+              if (this.addPeer(name, address)) {
+                System.out.println(this.name + ": Added peer '" + name + "'.");
+              }
+
               this.parseCommand(command, os);
 
             } catch (ClassNotFoundException e) {
@@ -129,24 +149,29 @@ public class Node implements Runnable {
       } catch (IOException e) {
         e.printStackTrace();
       }
+
+      Thread.yield();
     }
-
-    exec.shutdown();
-
-    updateThread.interrupt();
 
     try {
       socket.close();
     } catch (IOException e) {
       e.printStackTrace();
     }
+
+    exec.shutdown();
+    System.out.println(this.name + ": Going offline …");
   }
 
   private Thread updateThread = new Thread(() -> {
     System.out.println(this.name + ": Update thread starting.");
 
-    while (!Thread.interrupted()) {
-      this.randomPeer().ifPresent(peer -> {
+    while (this.running) {
+      final var optionalPeer = this.randomPeer();
+
+      if (optionalPeer.isPresent()) {
+        final var peer = optionalPeer.get();
+
         try {
           System.out.println(this.name + ": Requesting table from '" + peer.getKey() + "' …");
           final var connection = new Socket(peer.getValue().getAddress(), peer.getValue().getPort());
@@ -155,32 +180,37 @@ public class Node implements Runnable {
             final var os = new ObjectOutputStream(connection.getOutputStream());
             final var is = new ObjectInputStream(connection.getInputStream());
           ) {
-
             os.writeObject(this.name);
             os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
             os.writeObject("GET_TABLE");
 
             try {
               final var peers = (Map<String, InetSocketAddress>)is.readObject();
-              System.out.println(this.name + ": Received table: " + peers);
-              peers.forEach(this::addPeer);
+              System.out.println(this.name + ": Received table with " + peers.size() + " peers: " + peers);
+
+              synchronized (this.peers) {
+                peers.forEach((name, address) -> {
+                  if (this.addPeer(name, address)) {
+                    System.out.println(this.name + ": Added peer '" + name + "'.");
+                  }
+                });
+              }
             } catch (ClassNotFoundException e) {
               e.printStackTrace();
             }
-          } catch (IOException e) {
-            e.printStackTrace();
           }
         } catch (IOException e) {
           // Remove offline peer.
-          System.out.println(this.name + ": Peer '" + peer.getKey() + "' is unreachable.");
+          System.out.println(this.name + ": Removing unreachable peer '" + peer.getKey() + "' …");
           this.removePeer(peer.getKey());
+          continue;
         }
-      });
+      }
 
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {
-        break;
+        continue;
       }
     }
 
@@ -194,5 +224,14 @@ public class Node implements Runnable {
 
     var i = ThreadLocalRandom.current().nextInt(peers.size());
     return Optional.of((Map.Entry<String, InetSocketAddress>)peers.entrySet().toArray()[i]);
+  }
+
+  public void shutdown() {
+    this.running = false;
+  }
+
+  @Override
+  public String toString() {
+    return "Node(" + this.getName() + ", " + this.getAddress() + ", " + this.getPort() + ")";
   }
 }

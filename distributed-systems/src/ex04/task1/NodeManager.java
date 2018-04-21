@@ -1,26 +1,65 @@
 package ex04.task1;
 
 import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.*;
 
 public class NodeManager {
+  private static int CURRENT_PORT = 2000;
+
+  private static List<Node> createCluster(String clusterName, int size) {
+    final List<Node> nodes = IntStream.rangeClosed(1, size).mapToObj(i -> {
+      try {
+        return new Node(clusterName + "-node" + i, CURRENT_PORT++, size);
+      } catch (UnknownHostException e) {
+        throw new RuntimeException(e);
+      }
+    }).collect(Collectors.toList());
+
+    // “Chain” all nodes in the cluster together.
+    for (int i = 1; i < size; i++) {
+      final var previousNode = nodes.get(i - 1);
+      nodes.get(i).addPeer(previousNode.getName(), previousNode.getSocketAddress());
+    }
+
+    return nodes;
+  }
+
   public static void main(String[] args) throws UnknownHostException, InterruptedException {
-    var node1 = new Node(InetAddress.getLocalHost(), 2001, "node1");
-    var node2 = new Node(InetAddress.getLocalHost(), 2002, "node2");
+    int n = 5;
 
-    node2.addPeer("node1", new InetSocketAddress(InetAddress.getLocalHost(), 2001));
+    final var cluster1 = createCluster("cluster1", n);
+    final var cluster2 = createCluster("cluster2", n);
+    final var cluster3 = createCluster("cluster3", n);
 
-    var node1Thread = new Thread(node1);
-    var node2Thread = new Thread(node2);
+    final var cluster1Node1 = cluster1.get(0);
+    final var cluster2Node1 = cluster2.get(0);
+    final var cluster3Node1 = cluster3.get(0);
 
-    node1Thread.start();
+    cluster2Node1.addPeer(cluster1Node1.getName(), cluster1Node1.getSocketAddress());
+    cluster3Node1.addPeer(cluster1Node1.getName(), cluster1Node1.getSocketAddress());
 
-    Thread.sleep(2000);
+    var allNodes = List.of(cluster1, cluster2, cluster3).stream().flatMap(nodes -> nodes.stream()).collect(Collectors.toList());
 
-    node2Thread.start();
+    allNodes.stream().forEach(node -> new Thread(node).start());
 
-    Thread.sleep(10000);
+    // Wait for full network propagation.
+    Thread.sleep(3 * 3 * n * 1000 + 10000);
 
-    System.out.println("   NM: Shutting down node 2 …");
-    node2Thread.interrupt();
+    // Shut down all nodes in random order, with random delay in-between.
+    Collections.shuffle(allNodes);
+
+    allNodes.stream().forEach(node -> {
+      try {
+        Thread.sleep(ThreadLocalRandom.current().nextInt(10,20) * 1000);
+        System.err.println("Shutting down node '" + node.getName() + "'.");
+        node.shutdown();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    });
+
+    System.err.println("All nodes are now offline.");
   }
 }
