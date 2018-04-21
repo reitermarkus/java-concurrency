@@ -99,6 +99,14 @@ public class Table implements Serializable {
     return entries.stream().findFirst();
   }
 
+  public boolean contains(String name) {
+    return this.table.containsKey(name);
+  }
+
+  public InetSocketAddress get(String name) {
+    return this.table.get(name);
+  }
+
   public int size() {
     return this.table.size();
   }
