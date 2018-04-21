@@ -158,45 +158,7 @@ public class Node implements Runnable {
     System.out.println(this.name + ": Update thread starting.");
 
     while (!Thread.interrupted()) {
-      final var optionalPeer = this.randomPeer();
-
-      if (optionalPeer.isPresent()) {
-        final var peer = optionalPeer.get();
-
-        try {
-          System.out.println(this.name + ": Requesting table from '" + peer.getKey() + "' …");
-          final var connection = new Socket(peer.getValue().getAddress(), peer.getValue().getPort());
-
-          try (
-            final var os = new ObjectOutputStream(connection.getOutputStream());
-            final var is = new ObjectInputStream(connection.getInputStream());
-          ) {
-            os.writeObject(this.name);
-            os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
-            os.writeObject("GET_TABLE");
-
-            try {
-              final var peers = (Map<String, InetSocketAddress>)is.readObject();
-              System.out.println(this.name + ": Received table with " + peers.size() + " peers: " + peers);
-
-              synchronized (this.peers) {
-                peers.forEach((name, address) -> {
-                  if (this.addPeer(name, address)) {
-                    System.out.println(this.name + ": Added peer '" + name + "'.");
-                  }
-                });
-              }
-            } catch (ClassNotFoundException e) {
-              e.printStackTrace();
-            }
-          }
-        } catch (IOException e) {
-          // Remove offline peer.
-          System.out.println(this.name + ": Removing unreachable peer '" + peer.getKey() + "' …");
-          this.removePeer(peer.getKey());
-          continue;
-        }
-      }
+      this.update();
 
       try {
         Thread.sleep(5000);
@@ -207,6 +169,44 @@ public class Node implements Runnable {
 
     System.out.println(this.name + ": Update thread stopped.");
   });
+
+  private void update() {
+    this.randomPeer().ifPresent(peer -> {
+      try {
+        System.out.println(this.name + ": Requesting table from '" + peer.getKey() + "' …");
+        final var connection = new Socket(peer.getValue().getAddress(), peer.getValue().getPort());
+
+        try (
+          final var os = new ObjectOutputStream(connection.getOutputStream());
+          final var is = new ObjectInputStream(connection.getInputStream());
+        ) {
+          os.writeObject(this.name);
+          os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
+          os.writeObject("GET_TABLE");
+
+          try {
+            final var peers = (Map<String, InetSocketAddress>)is.readObject();
+            System.out.println(this.name + ": Received table with " + peers.size() + " peers: " + peers);
+
+            synchronized (this.peers) {
+              peers.forEach((name, address) -> {
+                if (this.addPeer(name, address)) {
+                  System.out.println(this.name + ": Added peer '" + name + "'.");
+                }
+              });
+            }
+          } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+          }
+        }
+      } catch (IOException e) {
+        // Remove offline peer.
+        System.out.println(this.name + ": Removing unreachable peer '" + peer.getKey() + "' …");
+        this.removePeer(peer.getKey());
+        this.update();
+      }
+    });
+  }
 
   private Optional<Map.Entry<String, InetSocketAddress>> randomPeer() {
     if (peers.isEmpty()) {
