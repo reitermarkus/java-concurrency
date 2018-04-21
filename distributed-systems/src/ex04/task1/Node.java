@@ -65,6 +65,24 @@ public class Node implements Runnable {
     }
   }
 
+  private boolean parseCommand(final String cmd, final ObjectOutputStream os) throws IOException {
+    try {
+      switch (Commands.valueOf(cmd)) {
+        case GET_TABLE:
+          synchronized (this.peers) {
+            os.writeObject(this.peers);
+            System.out.println(this.port + ": Sent table: " + this.peers);
+          }
+          return true;
+      }
+    } catch (IllegalArgumentException e) {
+      System.err.println("Illegal command " + "\"" + cmd + "\"" + " was sent!");
+      return false;
+    }
+
+    return false;
+  }
+
   public void run() {
     try {
       this.socket = new ServerSocket(this.port);
@@ -89,13 +107,7 @@ public class Node implements Runnable {
               final var command = (String)is.readObject();
 
               this.addPeer(address);
-
-              if (command.equals("getTable")) {
-                synchronized (this.peers) {
-                  os.writeObject(this.peers);
-                  System.out.println(this.port + ": Sent table: " + this.peers);
-                }
-              }
+              this.parseCommand(command, os);
 
             } catch (ClassNotFoundException e) {
               e.printStackTrace();
@@ -136,7 +148,7 @@ public class Node implements Runnable {
               final var is = new ObjectInputStream(connection.getInputStream())) {
 
             os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
-            os.writeObject("getTable");
+            os.writeObject("GET_TABLE");
 
             try {
               final var peers = (Set<InetSocketAddress>)is.readObject();
