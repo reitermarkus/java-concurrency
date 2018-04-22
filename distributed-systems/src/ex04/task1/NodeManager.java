@@ -24,7 +24,7 @@ public class NodeManager {
     }).collect(Collectors.toList());
 
     // “Chain” all nodes in the cluster together.
-    for (int i = 1; i < size; i++) {
+    for (int i = 1; i < nodes.size(); i++) {
       final var previousNode = nodes.get(i - 1);
       nodes.get(i).addPeer(previousNode.getName(), previousNode.getSocketAddress());
     }
@@ -32,8 +32,8 @@ public class NodeManager {
     return nodes;
   }
 
-  public static void main(String[] args) throws UnknownHostException, InterruptedException {
-    int n = 5;
+  public static void main(String[] args) throws InterruptedException {
+    int n = 50;
 
     final var cluster1 = createCluster("cluster1", n);
     final var cluster2 = createCluster("cluster2", n);
@@ -50,25 +50,21 @@ public class NodeManager {
 
     allNodes.stream().forEach(node -> new Thread(node).start());
 
-
-    log(green("Lookup returned '" + cluster1.get(0).lookup("cluster3-node5") + "'."));
-
     Thread.sleep(10000);
 
-    log(green("Lookup returned '" + cluster1.get(0).lookup("cluster3-node5") + "'."));
-
+    log(green("Lookup returned '" + cluster1.get(0).lookup(cluster3.get(n - 1).getName()) + "'."));
 
     // Wait for full network propagation.
-    Thread.sleep(3 * 3 * n * 1000 + 10000);
+    Thread.sleep(50000);
 
-    log(green("Lookup returned '" + cluster1.get(0).lookup("cluster3-node5") + "'."));
+    log(green("Lookup returned '" + cluster1.get(0).lookup(cluster3.get(n - 1).getName()) + "'."));
 
     // Shut down all nodes in random order, with random delay in-between.
     Collections.shuffle(allNodes);
 
     allNodes.stream().forEach(node -> {
       try {
-        Thread.sleep(ThreadLocalRandom.current().nextInt(10,20) * 1000);
+        Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 15000));
         log(red("Shutting down node '" + node.getName() + "'."));
         node.shutdown();
       } catch (InterruptedException e) {

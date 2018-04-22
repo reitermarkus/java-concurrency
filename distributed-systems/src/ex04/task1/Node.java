@@ -9,7 +9,6 @@ import java.util.stream.*;
 import static ex04.task1.ANSI.*;
 
 public class Node implements Runnable {
-  private Map<String, InetSocketAddress> peers = new HashMap<>();
   private Map<UUID, String> messageBuffer = new HashMap<>();
   private Table table = new Table(this);
 
@@ -109,33 +108,35 @@ public class Node implements Runnable {
     return true;
   }
 
-  private boolean handleCommand(final Command cmd, final ObjectInputStream is, final ObjectOutputStream os) throws IOException, ClassNotFoundException {
-      switch (cmd.getCommandType()) {
-        case GET_TABLE:
-          synchronized (this.table) {
-            os.writeObject(this.table);
-            log(purple("Sent table: " + this.table));
+  private void handleCommand(final Command cmd, final ObjectInputStream is, final ObjectOutputStream os) throws IOException, ClassNotFoundException {
+    switch (cmd.getCommandType()) {
+      case GET_TABLE:
+        final var clientName = (String)is.readObject();
+        final var clientAddress = (InetSocketAddress)is.readObject();
+
+        synchronized (this.table) {
+          os.writeObject(this.table);
+          log(purple("Sent table: " + this.table));
+
+          if (this.table.add(clientName, clientAddress)) {
+            log(green("Added peer '" + name + "'."));
           }
-          return true;
-        case LOOKUP:
-          final var name = (String)is.readObject();
-          var hops = (Set<Peer>)is.readObject();
-
-          log(blue("Received lookup request: " + hops + ""));
-
-          os.writeObject(this.lookup(name, hops));
-          os.writeObject(hops);
-        return true;
-      case MESSAGE:
-        final var command = (Command) is.readObject();
-
-        if (broadcast(command, false)) {
-          return true;
         }
-        return false;
-    }
+        return;
+      case LOOKUP:
+        final var lookupName = (String)is.readObject();
+        var hops = (Set<Peer>)is.readObject();
 
-    return false;
+        log(blue("Received lookup request: " + hops + ""));
+
+        os.writeObject(this.lookup(lookupName, hops));
+        os.writeObject(hops);
+        return;
+      case MESSAGE:
+        final var command = (Command)is.readObject();
+        broadcast(command, false);
+        return;
+    }
   }
 
   public void run() {
@@ -155,14 +156,7 @@ public class Node implements Runnable {
               final var os = new ObjectOutputStream(connection.getOutputStream());
             ) {
               try {
-                final var name = (String)is.readObject();
-                final var address = (InetSocketAddress)is.readObject();
                 final var command = (Command)is.readObject();
-
-                if (this.table.merge(name, address)) {
-                  log(green("Added peer '" + name + "'."));
-                }
-
                 this.handleCommand(command, is, os);
               } catch (ClassNotFoundException e) {
                 e.printStackTrace();
@@ -199,7 +193,7 @@ public class Node implements Runnable {
       this.update();
 
       try {
-        Thread.sleep(ThreadLocalRandom.current().nextInt(2000, 4000));
+        Thread.sleep(3000);
       } catch (InterruptedException e) {
         break;
       }
@@ -213,9 +207,9 @@ public class Node implements Runnable {
       try {
         log(blue("Requesting table from '" + peer.getName() + "' …"));
         peer.send((is, os) -> {
+          os.writeObject(new Command(CommandType.GET_TABLE, this.name));
           os.writeObject(this.name);
           os.writeObject(this.getSocketAddress());
-          os.writeObject(new Command(CommandType.GET_TABLE, this.name));
 
           try {
             final var peers = (Table)is.readObject();
@@ -273,8 +267,6 @@ public class Node implements Runnable {
       try {
         log(blue("Looking up '" + name + "' via '" + peer.getName() + "'."));
         final var socketAddress = peer.send((is, os) -> {
-          os.writeObject(this.name);
-          os.writeObject(this.getSocketAddress());
           os.writeObject(new Command(CommandType.LOOKUP, this.name));
           os.writeObject(name);
           os.writeObject(hops);
