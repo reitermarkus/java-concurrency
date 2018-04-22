@@ -10,6 +10,7 @@ import static ex04.task1.ANSI.*;
 
 public class Node implements Runnable {
   private Map<String, InetSocketAddress> peers = new HashMap<>();
+  private Map<UUID, String> messageBuffer = new HashMap<>();
   private Table table = new Table(this);
 
   private InetAddress address;
@@ -70,8 +71,49 @@ public class Node implements Runnable {
     }
   }
 
+  private void addToBuffer(Command command) {
+    synchronized (this.messageBuffer) {
+      if (this.messageBuffer.size() > 99) {
+        messageBuffer.remove(this.messageBuffer.entrySet().toArray()[0]);
+      }
+
+      messageBuffer.putIfAbsent(command.getCmdId(), command.getMessage());
+    }
+  }
+
+  public boolean broadcast(String message) {
+    return broadcast(new Command(CommandType.MESSAGE, this.name, message), true);
+  }
+
+  private boolean broadcast(Command command, boolean init) {
+    if (!messageBuffer.containsKey(command.getCmdId())) {
+      if (!init) {
+        addToBuffer(command);
+        System.out.println(command.getSender() + ": Sent message: " + command.getMessage());
+      }
+
+      final var peers = this.table.getEntrySet().stream().map(Peer::new).collect(Collectors.toList());
+
+      for (final var peer : peers) {
+        try {
+          peer.send((is, os) -> {
+            try {
+              os.writeObject(command);
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          });
+        } catch (IOException e) {
+          e.printStackTrace();
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   private boolean handleCommand(final Command cmd, final ObjectInputStream is, final ObjectOutputStream os) throws IOException, ClassNotFoundException {
-    try {
       switch (cmd.getCommandType()) {
         case GET_TABLE:
           synchronized (this.table) {
@@ -87,11 +129,14 @@ public class Node implements Runnable {
 
           os.writeObject(this.lookup(name, hops));
           os.writeObject(hops);
+        return true;
+      case MESSAGE:
+        final var command = (Command) is.readObject();
+
+        if (broadcast(command, false)) {
           return true;
-      }
-    } catch (IllegalArgumentException e) {
-      System.err.println("Illegal command " + "\"" + cmd + "\"" + " was sent!");
-      return false;
+        }
+        return false;
     }
 
     return false;
