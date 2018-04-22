@@ -171,7 +171,6 @@ public class Node implements Runnable {
       try {
         System.out.println(this.name + ": Requesting table from '" + peer.getName() + "' …");
         peer.send((is, os) -> {
-
           try {
             os.writeObject(this.name);
             os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));

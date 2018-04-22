@@ -10,7 +10,9 @@ interface Function<T, U, R> {
   public R apply(T t, U u);
 }
 
-public class Peer implements Map.Entry<String, InetSocketAddress> {
+public class Peer implements Map.Entry<String, InetSocketAddress>, Serializable {
+  private static final long serialVersionUID = 1L;
+
   private String name;
   private InetSocketAddress address;
 
