@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.*;
 
 import static ex04.task1.ANSI.*;
 
@@ -80,18 +81,12 @@ public class Node implements Runnable {
           return true;
         case LOOKUP:
           final var name = (String)is.readObject();
-          var hops = (Set<Peer>)is.readObject();
+          var hops = (Set<String>)is.readObject();
 
           log(blue("Received lookup request: " + hops + ""));
 
-          synchronized (this.table) {
-            if (this.table.contains(name)) {
-              os.writeObject(this.table.get(name));
-              return true;
-            }
-          }
-
           os.writeObject(this.lookup(name, hops));
+          os.writeObject(hops);
           return true;
       }
     } catch (IllegalArgumentException e) {
@@ -214,24 +209,31 @@ public class Node implements Runnable {
   }
 
   public InetSocketAddress lookup(String name) {
-    var hops = new HashSet<Peer>();
-    hops.add(new Peer(this.getName(), this.getSocketAddress()));
+    var hops = new HashSet<String>();
+    hops.add(this.getName());
 
     return lookup(name, hops);
   }
 
-  private InetSocketAddress lookup(String name, Set<Peer> hops) {
-    if (this.table.contains(name)) {
-      return this.table.get(name);
+  private InetSocketAddress lookup(String name, Set<String> hops) {
+    synchronized (this.table) {
+      if (this.table.contains(name)) {
+        return this.table.get(name);
+      }
     }
 
-    System.err.println(this.name + ": Looking up '" + name + "'.");
+    hops.add(this.getName());
 
-    hops.add(new Peer(this.getName(), this.getSocketAddress()));
+    final var peers = this.table.getEntrySet().stream().map(Peer::new).collect(Collectors.toList());
 
-    return this.table.getEntrySet().stream().map(Peer::new).filter(peer -> !hops.contains(peer)).findFirst().map(peer -> {
+    for (final var peer: peers) {
+      if (hops.contains(peer.getName())) {
+        continue;
+      }
+
       try {
-        return peer.send((is, os) -> {
+        log(blue("Looking up '" + name + "' via '" + peer.getName() + "'."));
+        final var socketAddress = peer.send((is, os) -> {
           os.writeObject(this.name);
           os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
           os.writeObject(new Command(CommandType.LOOKUP, this.name));
@@ -240,18 +242,25 @@ public class Node implements Runnable {
 
           try {
             final var address = (InetSocketAddress)is.readObject();
+            final var newHops = (Set<String>)is.readObject();
+            hops.addAll(newHops);
             log(blue("Received lookup response: '" + address + "'"));
             return address;
           } catch (ClassNotFoundException e) {
             return null;
           }
         });
+
+        if (socketAddress != null) {
+          return socketAddress;
+        }
       } catch (IOException e) {
         log(red("Removing unreachable peer '" + peer.getName() + "' …"));
         this.removePeer(peer.getKey());
-        return this.lookup(name, hops);
       }
-    }).orElse(null);
+    }
+
+    return null;
   }
 
   public void shutdown() {

@@ -53,6 +53,11 @@ public class NodeManager {
 
     log(green("Lookup returned '" + cluster1.get(0).lookup("cluster3-node5") + "'."));
 
+    Thread.sleep(10000);
+
+    log(green("Lookup returned '" + cluster1.get(0).lookup("cluster3-node5") + "'."));
+
+
     // Wait for full network propagation.
     Thread.sleep(3 * 3 * n * 1000 + 10000);
 
