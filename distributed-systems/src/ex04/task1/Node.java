@@ -177,33 +177,29 @@ public class Node implements Runnable {
       try {
         log(blue("Requesting table from '" + peer.getName() + "' …"));
         peer.send((is, os) -> {
+          os.writeObject(this.name);
+          os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
+          os.writeObject(new Command(CommandType.GET_TABLE, this.name));
+
           try {
-            os.writeObject(this.name);
-            os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
-            os.writeObject(new Command(CommandType.GET_TABLE, this.name));
+            final var peers = (Table) is.readObject();
+            log(blue("Received table with " + peers.size() + " peers: " + peers));
 
-            try {
-              final var peers = (Table) is.readObject();
-              log(blue("Received table with " + peers.size() + " peers: " + peers));
+            synchronized (this.table) {
+              final var addedAndRemoved = this.table.merge(peers);
+              final var added = addedAndRemoved.getKey();
+              final var removed = addedAndRemoved.getValue();
 
-              synchronized (this.table) {
-                final var addedAndRemoved = this.table.merge(peers);
-                final var added = addedAndRemoved.getKey();
-                final var removed = addedAndRemoved.getValue();
+              added.forEach(entry -> {
+                log(green("Added peer '" + entry.getKey() + "'."));
+              });
 
-                added.forEach(entry -> {
-                  log(green("Added peer '" + entry.getKey() + "'."));
-                });
-
-                removed.forEach(entry -> {
-                  log(red("Removed peer '" + entry.getKey() + "'."));
-                });
-              }
-            } catch (ClassNotFoundException e) {
-              e.printStackTrace();
+              removed.forEach(entry -> {
+                log(red("Removed peer '" + entry.getKey() + "'."));
+              });
             }
-          } catch (IOException e) {
-            throw new RuntimeException(e);
+          } catch (ClassNotFoundException e) {
+            e.printStackTrace();
           }
         });
       } catch (IOException e) {
@@ -234,16 +230,17 @@ public class Node implements Runnable {
     return this.table.getEntrySet().stream().map(Peer::new).filter(peer -> !hops.contains(peer)).findFirst().map(peer -> {
       try {
         return peer.send((is, os) -> {
-          try {
-            os.writeObject(this.name);
-            os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
-            os.writeObject(new Command(CommandType.LOOKUP, this.name));
-            os.writeObject(name);
-            os.writeObject(hops);
+          os.writeObject(this.name);
+          os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
+          os.writeObject(new Command(CommandType.LOOKUP, this.name));
+          os.writeObject(name);
+          os.writeObject(hops);
 
+          try {
+            final var address = (InetSocketAddress)is.readObject();
+            return address;
+          } catch (ClassNotFoundException e) {
             return null;
-          } catch (IOException e) {
-            throw new RuntimeException(e);
           }
         });
       } catch (IOException e) {

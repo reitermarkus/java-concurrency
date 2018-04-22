@@ -5,12 +5,17 @@ import java.net.*;
 import java.util.*;
 import java.util.function.*;
 
-@FunctionalInterface
-interface Function<T, U, R> {
-  public R apply(T t, U u);
-}
-
 public class Peer implements Map.Entry<String, InetSocketAddress>, Serializable {
+  @FunctionalInterface
+  interface Function<T, U, R> {
+    public R apply(T t, U u) throws IOException;
+  }
+
+  @FunctionalInterface
+  interface BiConsumer<T, U> {
+    public void accept(T t, U u) throws IOException;
+  }
+
   private static final long serialVersionUID = 1L;
 
   private String name;
@@ -44,12 +49,6 @@ public class Peer implements Map.Entry<String, InetSocketAddress>, Serializable 
       final var is = new ObjectInputStream(connection.getInputStream());
     ) {
       return f.apply(is, os);
-    } catch (RuntimeException e) {
-      if (e.getCause() instanceof IOException) {
-        throw (IOException)e.getCause();
-      }
-
-      throw e;
     }
   }
 
