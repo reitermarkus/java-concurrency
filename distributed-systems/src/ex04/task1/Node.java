@@ -60,15 +60,11 @@ public class Node implements Runnable {
   }
 
   public boolean addPeer(String name, InetSocketAddress peerAddress) {
-    synchronized (this.table) {
-      return this.table.add(name, peerAddress);
-    }
+    return this.table.add(name, peerAddress);
   }
 
   public boolean removePeer(String name) {
-    synchronized (this.table) {
-      return this.table.remove(name);
-    }
+    return this.table.remove(name);
   }
 
   private void addToBuffer(Command command) {
@@ -163,10 +159,8 @@ public class Node implements Runnable {
                 final var address = (InetSocketAddress)is.readObject();
                 final var command = (Command)is.readObject();
 
-                synchronized (this.table) {
-                  if (this.table.merge(name, address)) {
-                    log(green("Added peer '" + name + "'."));
-                  }
+                if (this.table.merge(name, address)) {
+                  log(green("Added peer '" + name + "'."));
                 }
 
                 this.handleCommand(command, is, os);
@@ -220,26 +214,24 @@ public class Node implements Runnable {
         log(blue("Requesting table from '" + peer.getName() + "' …"));
         peer.send((is, os) -> {
           os.writeObject(this.name);
-          os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
+          os.writeObject(this.getSocketAddress());
           os.writeObject(new Command(CommandType.GET_TABLE, this.name));
 
           try {
             final var peers = (Table)is.readObject();
             log(blue("Received table with " + peers.size() + " peers: " + peers));
 
-            synchronized (this.table) {
-              final var addedAndRemoved = this.table.merge(peers);
-              final var added = addedAndRemoved.getKey();
-              final var removed = addedAndRemoved.getValue();
+            final var addedAndRemoved = this.table.merge(peers);
+            final var added = addedAndRemoved.getKey();
+            final var removed = addedAndRemoved.getValue();
 
-              added.forEach(entry -> {
-                log(green("Added peer '" + entry.getKey() + "'."));
-              });
+            added.forEach(entry -> {
+              log(green("Added peer '" + entry.getKey() + "'."));
+            });
 
-              removed.forEach(entry -> {
-                log(red("Removed peer '" + entry.getKey() + "'."));
-              });
-            }
+            removed.forEach(entry -> {
+              log(red("Removed peer '" + entry.getKey() + "'."));
+            });
           } catch (ClassNotFoundException e) {
             e.printStackTrace();
           }
@@ -261,15 +253,17 @@ public class Node implements Runnable {
   }
 
   private InetSocketAddress lookup(String name, Set<String> hops) {
+    List<Peer> peers;
+
     synchronized (this.table) {
       if (this.table.contains(name)) {
         return this.table.get(name);
+      } else {
+        peers = this.table.getEntrySet().stream().map(Peer::new).collect(Collectors.toList());
       }
     }
 
     hops.add(this.getName());
-
-    final var peers = this.table.getEntrySet().stream().map(Peer::new).collect(Collectors.toList());
 
     for (final var peer: peers) {
       if (hops.contains(peer.getName())) {
@@ -280,7 +274,7 @@ public class Node implements Runnable {
         log(blue("Looking up '" + name + "' via '" + peer.getName() + "'."));
         final var socketAddress = peer.send((is, os) -> {
           os.writeObject(this.name);
-          os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
+          os.writeObject(this.getSocketAddress());
           os.writeObject(new Command(CommandType.LOOKUP, this.name));
           os.writeObject(name);
           os.writeObject(hops);

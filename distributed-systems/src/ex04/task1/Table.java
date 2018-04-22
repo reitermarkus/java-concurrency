@@ -14,11 +14,11 @@ public class Table implements Serializable {
 
   private Node node;
 
-  private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+  private synchronized void writeObject(java.io.ObjectOutputStream out) throws IOException {
     out.writeObject(this.table);
   }
 
-  private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+  private synchronized void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
     this.table = (Map<String, InetSocketAddress>)in.readObject();
   }
 
@@ -26,7 +26,7 @@ public class Table implements Serializable {
     this.node = node;
   }
 
-  public boolean add(String name, InetSocketAddress socketAddress) {
+  public synchronized boolean add(String name, InetSocketAddress socketAddress) {
     if (this.table.containsKey(name)) {
       return false;
     }
@@ -49,17 +49,17 @@ public class Table implements Serializable {
     return true;
   }
 
-  public Pair<List<Map.Entry<String, InetSocketAddress>>, List<Map.Entry<String, InetSocketAddress>>> merge(Table other) {
+  public synchronized Pair<List<Map.Entry<String, InetSocketAddress>>, List<Map.Entry<String, InetSocketAddress>>> merge(Table other) {
     return this.merge(other.table.entrySet());
   }
 
-  public boolean merge(String name, InetSocketAddress socketAddress) {
+  public synchronized boolean merge(String name, InetSocketAddress socketAddress) {
     final var entry = Map.entry(name, socketAddress);
     final var added = this.merge(List.of(entry)).getKey();
     return added.contains(entry);
   }
 
-  private Pair<List<Map.Entry<String, InetSocketAddress>>, List<Map.Entry<String, InetSocketAddress>>> merge(Collection<Map.Entry<String, InetSocketAddress>> newEntries) {
+  private synchronized Pair<List<Map.Entry<String, InetSocketAddress>>, List<Map.Entry<String, InetSocketAddress>>> merge(Collection<Map.Entry<String, InetSocketAddress>> newEntries) {
     List<Map.Entry<String, InetSocketAddress>> added = new ArrayList<>();
     List<Map.Entry<String, InetSocketAddress>> removed = new ArrayList<>();
 
@@ -83,7 +83,7 @@ public class Table implements Serializable {
     return new Pair<>(added, removed);
   }
 
-  public boolean remove(String name) {
+  public synchronized boolean remove(String name) {
     if (!this.table.containsKey(name)) {
       return false;
     }
@@ -92,31 +92,31 @@ public class Table implements Serializable {
     return true;
   }
 
-  public Optional<Peer> getRandom() {
+  public synchronized Optional<Peer> getRandom() {
     var entries = this.table.entrySet().stream().collect(Collectors.toList());
     Collections.shuffle(entries);
 
     return entries.stream().findFirst().map(peer -> new Peer(peer));
   }
 
-  public boolean contains(String name) {
+  public synchronized boolean contains(String name) {
     return this.table.containsKey(name);
   }
 
-  public InetSocketAddress get(String name) {
+  public synchronized InetSocketAddress get(String name) {
     return this.table.get(name);
   }
 
-  public Set<Map.Entry<String, InetSocketAddress>> getEntrySet() {
+  public synchronized Set<Map.Entry<String, InetSocketAddress>> getEntrySet() {
     return table.entrySet();
   }
 
-  public int size() {
+  public synchronized int size() {
     return this.table.size();
   }
 
   @Override
-  public String toString() {
-    return this.table.keySet().toString();
+  public synchronized String toString() {
+    return this.table.keySet().stream().sorted().collect(Collectors.toList()).toString();
   }
 }
