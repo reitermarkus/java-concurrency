@@ -199,7 +199,7 @@ public class Node implements Runnable {
       this.update();
 
       try {
-        Thread.sleep(5000);
+        Thread.sleep(ThreadLocalRandom.current().nextInt(2000, 4000));
       } catch (InterruptedException e) {
         break;
       }
