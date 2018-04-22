@@ -75,4 +75,19 @@ public class Peer implements Map.Entry<String, InetSocketAddress>, Serializable 
   public String toString() {
     return this.name;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) return true;
+    if (!(o instanceof Peer)) return false;
+
+    final var peer = (Peer)o;
+
+    return peer.name.equals(this.name) && peer.address.equals(this.address);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.name, this.address);
+  }
 }

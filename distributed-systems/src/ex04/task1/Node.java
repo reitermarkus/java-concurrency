@@ -119,7 +119,7 @@ public class Node implements Runnable {
           return true;
         case LOOKUP:
           final var name = (String)is.readObject();
-          var hops = (Set<String>)is.readObject();
+          var hops = (Set<Peer>)is.readObject();
 
           log(blue("Received lookup request: " + hops + ""));
 
@@ -246,13 +246,13 @@ public class Node implements Runnable {
   }
 
   public InetSocketAddress lookup(String name) {
-    var hops = new HashSet<String>();
-    hops.add(this.getName());
+    var hops = new HashSet<Peer>();
+    hops.add(new Peer(this.getName(), this.getSocketAddress()));
 
     return lookup(name, hops);
   }
 
-  private InetSocketAddress lookup(String name, Set<String> hops) {
+  private InetSocketAddress lookup(String name, Set<Peer> hops) {
     List<Peer> peers;
 
     synchronized (this.table) {
@@ -263,10 +263,10 @@ public class Node implements Runnable {
       }
     }
 
-    hops.add(this.getName());
+    hops.add(new Peer(this.getName(), this.getSocketAddress()));
 
     for (final var peer: peers) {
-      if (hops.contains(peer.getName())) {
+      if (hops.contains(peer)) {
         continue;
       }
 
@@ -281,7 +281,7 @@ public class Node implements Runnable {
 
           try {
             final var address = (InetSocketAddress)is.readObject();
-            final var newHops = (Set<String>)is.readObject();
+            final var newHops = (Set<Peer>)is.readObject();
             hops.addAll(newHops);
             log(blue("Received lookup response: '" + address + "'"));
             return address;
