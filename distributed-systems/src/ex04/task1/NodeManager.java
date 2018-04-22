@@ -44,6 +44,9 @@ public class NodeManager {
 
     allNodes.stream().forEach(node -> new Thread(node).start());
 
+
+    System.err.println("Lookup returned '" + cluster1.get(0).lookup("cluster3-node5") + "'.");
+
     // Wait for full network propagation.
     Thread.sleep(3 * 3 * n * 1000 + 10000);
 

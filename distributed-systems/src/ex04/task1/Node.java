@@ -63,7 +63,7 @@ public class Node implements Runnable {
     }
   }
 
-  private boolean parseCommand(final Command cmd, final ObjectOutputStream os) throws IOException {
+  private boolean handleCommand(final Command cmd, final ObjectInputStream is, final ObjectOutputStream os) throws IOException, ClassNotFoundException {
     try {
       switch (cmd.getCommandType()) {
         case GET_TABLE:
@@ -71,6 +71,19 @@ public class Node implements Runnable {
             os.writeObject(this.table);
             System.out.println(this.name + ": Sent table: " + this.table);
           }
+          return true;
+        case LOOKUP:
+          final var name = (String)is.readObject();
+          var hops = (Set<Peer>)is.readObject();
+
+          synchronized (this.table) {
+            if (this.table.contains(name)) {
+              os.writeObject(this.table.get(name));
+              return true;
+            }
+          }
+
+          os.writeObject(this.lookup(name, hops));
           return true;
       }
     } catch (IllegalArgumentException e) {
@@ -108,7 +121,7 @@ public class Node implements Runnable {
                   }
                 }
 
-                this.parseCommand(command, os);
+                this.handleCommand(command, is, os);
               } catch (ClassNotFoundException e) {
                 e.printStackTrace();
               }
@@ -156,38 +169,38 @@ public class Node implements Runnable {
   private void update() {
     this.table.getRandom().ifPresent(peer -> {
       try {
-        System.out.println(this.name + ": Requesting table from '" + peer.getKey() + "' …");
-        final var connection = new Socket(peer.getValue().getAddress(), peer.getValue().getPort());
-
-        try (
-          final var os = new ObjectOutputStream(connection.getOutputStream());
-          final var is = new ObjectInputStream(connection.getInputStream());
-        ) {
-          os.writeObject(this.name);
-          os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
-          os.writeObject(new Command(CommandType.GET_TABLE, this.name));
+        System.out.println(this.name + ": Requesting table from '" + peer.getName() + "' …");
+        peer.send((is, os) -> {
 
           try {
-            final var peers = (Table)is.readObject();
-            System.out.println(this.name + ": Received table with " + peers.size() + " peers: " + peers);
+            os.writeObject(this.name);
+            os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
+            os.writeObject(new Command(CommandType.GET_TABLE, this.name));
 
-            synchronized (this.table) {
-              final var addedAndRemoved = this.table.merge(peers);
-              final var added = addedAndRemoved.getKey();
-              final var removed = addedAndRemoved.getValue();
+            try {
+              final var peers = (Table) is.readObject();
+              System.out.println(this.name + ": Received table with " + peers.size() + " peers: " + peers);
 
-              added.forEach(entry -> {
-                System.out.println(this.name + ": Added peer '" + entry.getKey() + "'.");
-              });
+              synchronized (this.table) {
+                final var addedAndRemoved = this.table.merge(peers);
+                final var added = addedAndRemoved.getKey();
+                final var removed = addedAndRemoved.getValue();
 
-              removed.forEach(entry -> {
-                System.out.println(this.name + ": Removed peer '" + entry.getKey() + "'.");
-              });
+                added.forEach(entry -> {
+                  System.out.println(this.name + ": Added peer '" + entry.getKey() + "'.");
+                });
+
+                removed.forEach(entry -> {
+                  System.out.println(this.name + ": Removed peer '" + entry.getKey() + "'.");
+                });
+              }
+            } catch (ClassNotFoundException e) {
+              e.printStackTrace();
             }
-          } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
           }
-        }
+        });
       } catch (IOException e) {
         // Remove offline peer.
         System.out.println(this.name + ": Removing unreachable peer '" + peer.getKey() + "' …");
@@ -195,6 +208,43 @@ public class Node implements Runnable {
         this.update();
       }
     });
+  }
+
+  public InetSocketAddress lookup(String name) {
+    var hops = new HashSet<Peer>();
+    hops.add(new Peer(this.getName(), this.getSocketAddress()));
+
+    return lookup(name, hops);
+  }
+
+  private InetSocketAddress lookup(String name, Set<Peer> hops) {
+    if (this.table.contains(name)) {
+      return this.table.get(name);
+    }
+
+    hops.add(new Peer(this.getName(), this.getSocketAddress()));
+
+    return this.table.getEntrySet().stream().map(Peer::new).filter(peer -> !hops.contains(peer)).findFirst().map(peer -> {
+      try {
+        return new Peer(peer).send((is, os) -> {
+          try {
+            os.writeObject(this.name);
+            os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
+            os.writeObject(new Command(CommandType.LOOKUP, this.name));
+            os.writeObject(name);
+            os.writeObject(hops);
+
+            return null;
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        });
+      } catch (IOException e) {
+        System.out.println(this.name + ": Removing unreachable peer '" + peer.getKey() + "' …");
+        this.removePeer(peer.getKey());
+        return this.lookup(name, hops);
+      }
+    }).orElse(null);
   }
 
   public void shutdown() {
