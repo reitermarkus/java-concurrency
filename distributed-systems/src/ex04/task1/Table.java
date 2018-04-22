@@ -92,11 +92,11 @@ public class Table implements Serializable {
     return true;
   }
 
-  public Optional<Map.Entry<String, InetSocketAddress>> getRandom() {
+  public Optional<Peer> getRandom() {
     var entries = this.table.entrySet().stream().collect(Collectors.toList());
     Collections.shuffle(entries);
 
-    return entries.stream().findFirst();
+    return entries.stream().findFirst().map(peer -> new Peer(peer));
   }
 
   public boolean contains(String name) {
