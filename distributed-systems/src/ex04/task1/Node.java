@@ -5,6 +5,8 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+import static ex04.task1.ANSI.*;
+
 public class Node implements Runnable {
   private Map<String, InetSocketAddress> peers = new HashMap<>();
   private Table table = new Table(this);
@@ -15,6 +17,10 @@ public class Node implements Runnable {
   private ServerSocket socket;
 
   private int networkSize;
+
+  private void log(String string) {
+    System.out.println(this.name + ": " + string);
+  }
 
   public Node(int port, int networkSize) throws UnknownHostException {
     this(UUID.randomUUID().toString(), port, networkSize);
@@ -69,7 +75,7 @@ public class Node implements Runnable {
         case GET_TABLE:
           synchronized (this.table) {
             os.writeObject(this.table);
-            System.out.println(this.name + ": Sent table: " + this.table);
+            log(purple("Sent table: " + this.table));
           }
           return true;
         case LOOKUP:
@@ -102,7 +108,7 @@ public class Node implements Runnable {
     try (final var socket = this.socket = new ServerSocket(this.port)) {
       while (!Thread.interrupted()) {
         try {
-          System.out.println(this.name + ": Waiting for connection …");
+          log(blue("Waiting for connection …"));
           var connection = socket.accept();
 
           exec.submit(() -> {
@@ -117,7 +123,7 @@ public class Node implements Runnable {
 
                 synchronized (this.table) {
                   if (this.table.merge(name, address)) {
-                    System.out.println(this.name + ": Added peer '" + name + "'.");
+                    log(green("Added peer '" + name + "'."));
                   }
                 }
 
@@ -147,11 +153,11 @@ public class Node implements Runnable {
     } catch (InterruptedException e) {}
 
     exec.shutdown();
-    System.out.println(this.name + ": Going offline …");
+    log(red("Going offline …"));
   }
 
   private Thread updateThread = new Thread(() -> {
-    System.out.println(this.name + ": Update thread starting.");
+    log(blue("Update thread starting."));
 
     while (!Thread.interrupted()) {
       this.update();
@@ -163,13 +169,13 @@ public class Node implements Runnable {
       }
     }
 
-    System.out.println(this.name + ": Update thread stopped.");
+    log(red("Update thread stopped."));
   });
 
   private void update() {
     this.table.getRandom().ifPresent(peer -> {
       try {
-        System.out.println(this.name + ": Requesting table from '" + peer.getName() + "' …");
+        log(blue("Requesting table from '" + peer.getName() + "' …"));
         peer.send((is, os) -> {
           try {
             os.writeObject(this.name);
@@ -178,7 +184,7 @@ public class Node implements Runnable {
 
             try {
               final var peers = (Table) is.readObject();
-              System.out.println(this.name + ": Received table with " + peers.size() + " peers: " + peers);
+              log(blue("Received table with " + peers.size() + " peers: " + peers));
 
               synchronized (this.table) {
                 final var addedAndRemoved = this.table.merge(peers);
@@ -186,11 +192,11 @@ public class Node implements Runnable {
                 final var removed = addedAndRemoved.getValue();
 
                 added.forEach(entry -> {
-                  System.out.println(this.name + ": Added peer '" + entry.getKey() + "'.");
+                  log(green("Added peer '" + entry.getKey() + "'."));
                 });
 
                 removed.forEach(entry -> {
-                  System.out.println(this.name + ": Removed peer '" + entry.getKey() + "'.");
+                  log(red("Removed peer '" + entry.getKey() + "'."));
                 });
               }
             } catch (ClassNotFoundException e) {
@@ -202,7 +208,7 @@ public class Node implements Runnable {
         });
       } catch (IOException e) {
         // Remove offline peer.
-        System.out.println(this.name + ": Removing unreachable peer '" + peer.getKey() + "' …");
+        log(red("Removing unreachable peer '" + peer.getKey() + "' …"));
         this.removePeer(peer.getKey());
         this.update();
       }
@@ -221,11 +227,13 @@ public class Node implements Runnable {
       return this.table.get(name);
     }
 
+    System.err.println(this.name + ": Looking up '" + name + "'.");
+
     hops.add(new Peer(this.getName(), this.getSocketAddress()));
 
     return this.table.getEntrySet().stream().map(Peer::new).filter(peer -> !hops.contains(peer)).findFirst().map(peer -> {
       try {
-        return new Peer(peer).send((is, os) -> {
+        return peer.send((is, os) -> {
           try {
             os.writeObject(this.name);
             os.writeObject(new InetSocketAddress(this.getAddress(), this.getPort()));
@@ -239,7 +247,7 @@ public class Node implements Runnable {
           }
         });
       } catch (IOException e) {
-        System.out.println(this.name + ": Removing unreachable peer '" + peer.getKey() + "' …");
+        log(red("Removing unreachable peer '" + peer.getName() + "' …"));
         this.removePeer(peer.getKey());
         return this.lookup(name, hops);
       }

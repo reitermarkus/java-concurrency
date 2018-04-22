@@ -5,8 +5,14 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.*;
 
+import static ex04.task1.ANSI.*;
+
 public class NodeManager {
   private static int CURRENT_PORT = 2000;
+
+  private static void log(String string) {
+    System.out.println("Node Manager:   " + string);
+  }
 
   private static List<Node> createCluster(String clusterName, int size) {
     final List<Node> nodes = IntStream.rangeClosed(1, size).mapToObj(i -> {
@@ -45,10 +51,12 @@ public class NodeManager {
     allNodes.stream().forEach(node -> new Thread(node).start());
 
 
-    System.err.println("Lookup returned '" + cluster1.get(0).lookup("cluster3-node5") + "'.");
+    log(green("Lookup returned '" + cluster1.get(0).lookup("cluster3-node5") + "'."));
 
     // Wait for full network propagation.
     Thread.sleep(3 * 3 * n * 1000 + 10000);
+
+    log(green("Lookup returned '" + cluster1.get(0).lookup("cluster3-node5") + "'."));
 
     // Shut down all nodes in random order, with random delay in-between.
     Collections.shuffle(allNodes);
@@ -56,13 +64,13 @@ public class NodeManager {
     allNodes.stream().forEach(node -> {
       try {
         Thread.sleep(ThreadLocalRandom.current().nextInt(10,20) * 1000);
-        System.err.println("Shutting down node '" + node.getName() + "'.");
+        log(red("Shutting down node '" + node.getName() + "'."));
         node.shutdown();
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
     });
 
-    System.err.println("All nodes are now offline.");
+    log("All nodes are now offline.");
   }
 }
