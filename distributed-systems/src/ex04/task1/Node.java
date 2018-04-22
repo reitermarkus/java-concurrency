@@ -82,6 +82,8 @@ public class Node implements Runnable {
           final var name = (String)is.readObject();
           var hops = (Set<Peer>)is.readObject();
 
+          log(blue("Received lookup request: " + hops + ""));
+
           synchronized (this.table) {
             if (this.table.contains(name)) {
               os.writeObject(this.table.get(name));
@@ -182,7 +184,7 @@ public class Node implements Runnable {
           os.writeObject(new Command(CommandType.GET_TABLE, this.name));
 
           try {
-            final var peers = (Table) is.readObject();
+            final var peers = (Table)is.readObject();
             log(blue("Received table with " + peers.size() + " peers: " + peers));
 
             synchronized (this.table) {
@@ -238,6 +240,7 @@ public class Node implements Runnable {
 
           try {
             final var address = (InetSocketAddress)is.readObject();
+            log(blue("Received lookup response: '" + address + "'"));
             return address;
           } catch (ClassNotFoundException e) {
             return null;

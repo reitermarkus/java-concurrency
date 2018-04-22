@@ -71,4 +71,8 @@ public class Peer implements Map.Entry<String, InetSocketAddress>, Serializable 
   public InetSocketAddress setValue(InetSocketAddress address) {
     return this.address = address;
   }
+
+  public String toString() {
+    return this.name;
+  }
 }
