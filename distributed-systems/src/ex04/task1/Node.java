@@ -9,7 +9,7 @@ import java.util.stream.*;
 import static ex04.task1.ANSI.*;
 
 public class Node implements Runnable {
-  private Map<UUID, String> messageBuffer = new HashMap<>();
+  private Map<UUID, String> messageBuffer = new ConcurrentHashMap<>();
   private Table table = new Table(this);
 
   private InetAddress address;
@@ -67,13 +67,11 @@ public class Node implements Runnable {
   }
 
   private void addToBuffer(Command command) {
-    synchronized (this.messageBuffer) {
-      if (this.messageBuffer.size() > 99) {
-        messageBuffer.remove(this.messageBuffer.entrySet().toArray()[0]);
-      }
-
-      messageBuffer.putIfAbsent(command.getCmdId(), command.getMessage());
+    if (this.messageBuffer.size() > 99) {
+      messageBuffer.remove(this.messageBuffer.entrySet().toArray()[0]);
     }
+
+    messageBuffer.putIfAbsent(command.getCmdId(), command.getMessage());
   }
 
   public boolean broadcast(String message) {
@@ -81,15 +79,21 @@ public class Node implements Runnable {
   }
 
   private boolean broadcast(Command command, boolean init) {
-    if (!messageBuffer.containsKey(command.getCmdId())) {
-      if (!init) {
-        addToBuffer(command);
-        System.out.println(command.getSender() + ": Sent message: " + command.getMessage());
-      }
+    if (!init) {
+      addToBuffer(command);
+      System.out.println(this.getName() +": " + command.getSender() + ": message from: " + command.getSender() + ": " + command.getMessage());
+    }
 
-      final var peers = this.table.getEntrySet().stream().map(Peer::new).collect(Collectors.toList());
+    List<Peer> peers;
 
-      for (final var peer : peers) {
+    synchronized (this.table) {
+        peers = this.table.getEntrySet().stream().map(Peer::new).collect(Collectors.toList());
+    }
+
+    final var probabilities = List.of(0.1f, 0.5f, 0.9f);
+
+    for (final var peer : peers) {
+      if (ThreadLocalRandom.current().nextInt() > probabilities.get(ThreadLocalRandom.current().nextInt(0, 2))) {
         try {
           peer.send((is, os) -> {
             try {
@@ -133,8 +137,7 @@ public class Node implements Runnable {
         os.writeObject(hops);
         return;
       case MESSAGE:
-        final var command = (Command)is.readObject();
-        broadcast(command, false);
+        broadcast(cmd, false);
         return;
     }
   }
